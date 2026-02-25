@@ -1,16 +1,26 @@
-import express from 'express';
+import express from "express";
+import cors from "cors";
+import { env } from "./config/env";
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/api/v1/health", (_req, res) => {
-    res.json({ok: true});
-}
+
+app.use(
+  cors({
+    origin: env.CLIENT_ORIGIN,
+    credentials: true, 
+  })
 );
 
-const PORT = process.env.PORT || 3000;
+app.get("/api/v1/health", (_req, res) => {
+  res.json({
+    ok: true,
+    env: env.NODE_ENV,
+  });
+});
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(env.PORT, () => {
+  console.log(`API running on http://localhost:${env.PORT}`);
 });

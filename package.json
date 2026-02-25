@@ -1,9 +1,9 @@
 {
-  "name": "jobtracker",
+  "name": "jobtrackr",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "dev:web": "npm run dev -w @jobtracker/web",
-    "dev:api": "npm run dev -w @jobtracker/api"
+    "dev:web": "npm run dev -w @jobtrackr/web",
+    "dev:api": "npm run dev -w @jobtrackr/api"
   }
 }

@@ -1,20 +1,22 @@
-# Dependencies
-node_modules/
+# dependencies
+node_modules
 
-# Environment variables
+# env files (keep .env.example committed)
 .env
 .env.*
+!.env.example
 
-# Build output
-dist/
+# builds
+dist
+build
+coverage
 
-# Editor
-.vscode/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Logs
-*.log
+# logs
 npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.vscode
+.idea
