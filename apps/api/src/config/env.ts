@@ -12,7 +12,7 @@ const EnvSchema = z.object({
 
 
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
-
+  MONGODB_DB_NAME: z.string().min(1, "MONGODB_DB_NAME is required").default("jobtrackr"),
 
   JWT_ACCESS_SECRET: z.string().min(16, "JWT_ACCESS_SECRET must be at least 16 chars"),
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET must be at least 16 chars"),
