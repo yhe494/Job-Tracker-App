@@ -10,10 +10,10 @@ const EnvSchema = z.object({
 
   CLIENT_ORIGIN: z.string().min(1, "CLIENT_ORIGIN is required"),
 
-  // We validate now even if we connect in Step 3
+
   MONGODB_URI: z.string().min(1, "MONGODB_URI is required"),
 
-  // Reserve for Step 4 auth; keep required so you don't forget in deploy
+
   JWT_ACCESS_SECRET: z.string().min(16, "JWT_ACCESS_SECRET must be at least 16 chars"),
   JWT_REFRESH_SECRET: z.string().min(16, "JWT_REFRESH_SECRET must be at least 16 chars"),
 });
