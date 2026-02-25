@@ -1,4 +1,4 @@
-# JobTrackr
+# JobTracker
 
 Applicant-only job application tracking system.
 
