@@ -1,4 +1,4 @@
-# JobTrackr
+# JobTracker
 
 A full-stack job application tracking system for personal use.
 
