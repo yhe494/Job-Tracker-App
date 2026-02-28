@@ -1,86 +1,69 @@
 # JobTracker
 
-A full-stack job application tracking system for personal use.
+JobTracker is a full-stack app for managing job applications in one place.
 
-## Tech Stack
+## Stack
 
-| Layer     | Technology                        |
-| --------- | --------------------------------- |
-| Frontend  | React 19, Vite 7, TypeScript      |
-| Backend   | Express 5, TypeScript, Zod        |
-| Database  | MongoDB                           |
-| Tooling   | npm workspaces, tsx, ESLint        |
+- Frontend: React + Vite + TypeScript
+- Backend: Express + TypeScript
+- Database: MongoDB
+- Tooling: npm workspaces
 
-## Project Structure
+## Project Layout
 
-```
-jobtracker/
-├── apps/
-│   ├── api/          # Express API server
-│   │   └── src/
-│   │       ├── config/env.ts   # Zod-validated env config
-│   │       └── server.ts       # Express app entry point
-│   └── web/          # React SPA (Vite)
-│       └── src/
-├── packages/
-│   └── shared/       # Shared types & utilities (planned)
-└── package.json      # Workspace root
-```
+- `apps/web` — frontend app
+- `apps/api` — backend API
+- `packages/shared` — shared code (for common types/utilities)
 
-## Prerequisites
+## Authentication
 
-- Node.js ≥ 18
-- MongoDB instance (local or Atlas)
+The API includes a JWT-based authentication flow. After register/login, the server returns an access token and stores the refresh token in an HTTP-only cookie. Protected routes use the access token, and clients can request a new access token through the refresh endpoint without forcing users to sign in again.
 
-## Getting Started
+Current auth coverage includes register, login, refresh, logout, and a `me` endpoint for retrieving the authenticated user.
 
-1. **Install dependencies** (from the project root):
+| Method | Endpoint |
+| ------ | -------- |
+| POST | `/api/v1/auth/register` |
+| POST | `/api/v1/auth/login` |
+| POST | `/api/v1/auth/refresh` |
+| POST | `/api/v1/auth/logout` |
+| GET | `/api/v1/auth/me` |
+
+Note: `GET /api/v1/auth/me` requires `Authorization: Bearer <accessToken>`.
+
+## Quick Start
+
+1. Install dependencies:
 
    ```bash
    npm install
    ```
 
-2. **Configure environment variables** — create `apps/api/.env`:
+2. Create `apps/api/.env`:
 
    ```env
    NODE_ENV=development
    PORT=4000
    CLIENT_ORIGIN=http://localhost:5173
-   MONGODB_URI=mongodb://localhost:27017/jobtrackr
-   JWT_ACCESS_SECRET=your-access-secret-min-16-chars
-   JWT_REFRESH_SECRET=your-refresh-secret-min-16-chars
+   MONGODB_URI=mongodb://localhost:27017/jobtracker
+   JWT_ACCESS_SECRET=replace-with-secure-value
+   JWT_REFRESH_SECRET=replace-with-secure-value
    ```
 
-3. **Start development servers**:
+3. Run the apps (from project root):
 
    ```bash
-   # API (http://localhost:4000)
    npm run dev:api
-
-   # Web (http://localhost:5173)
    npm run dev:web
    ```
 
-4. **Verify the API** is running:
+## Scripts
 
-   ```
-   GET http://localhost:4000/api/v1/health
-   ```
+- `npm run dev:api` — run API in watch mode
+- `npm run dev:web` — run frontend dev server
 
-## Available Scripts
+## Current Scope
 
-| Command            | Description                  |
-| ------------------ | ---------------------------- |
-| `npm run dev:api`  | Start API server (watch mode)|
-| `npm run dev:web`  | Start Vite dev server        |
-
-## Current Status
-
-- [x] Monorepo setup (npm workspaces)
-- [x] Express API scaffold with health endpoint
-- [x] Environment validation (Zod)
-- [x] CORS configuration
-- [x] React + Vite frontend scaffold
-- [ ] MongoDB connection
-- [ ] Authentication (JWT)
-- [ ] Job CRUD API & UI
+- Authentication flow (register, login, refresh, logout)
+- Protected API foundation
+- Frontend scaffold for upcoming job tracking features
