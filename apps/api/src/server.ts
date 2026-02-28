@@ -1,33 +1,15 @@
-import express from "express";
-import cors from "cors";
+import app from "./app";
 import { env } from "./config/env";
-import { connectMongo, disconnectMongo, getDbStatus } from "./db/mongo";
+import { connectMongo, disconnectMongo} from "./db/mongo";
 
-const app = express();
 
-app.use(express.json());
-
-app.use(
-  cors({
-    origin: env.CLIENT_ORIGIN,
-    credentials: true,
-  })
-);
-
-app.get("/api/v1/health", (_req, res) => {
-  res.json({
-    ok: true,
-    env: env.NODE_ENV,
-    db: getDbStatus(),
-  });
-});
 
 async function start() {
   // Fail fast: DB must connect before server listens
   await connectMongo();
 
   const server = app.listen(env.PORT, () => {
-    console.log(`✅ API running on http://localhost:${env.PORT}`);
+    console.log(`API running on http://localhost:${env.PORT}`);
   });
 
   const shutdown = async (signal: string) => {
