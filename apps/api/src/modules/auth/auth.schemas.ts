@@ -23,5 +23,20 @@ export const loginSchema = z.object({
   password: passwordSchema,
 });
 
+export const updateMeSchema = z.object({
+  name:z.string().min(1).max(255).trim().optional(),
+})
+.refine(data => Object.values(data).some(v => v !== undefined), {
+  message: "At least one field must be provided",
+});
+
+export const changePasswordSchema = z.object({
+  currentPassword: z.string().min(8).max(255),
+  newPassword: z.string().min(8).max(255),
+});
+
+export type UpdateMeInput = z.infer<typeof updateMeSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
