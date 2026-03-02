@@ -1,6 +1,6 @@
-import {login, refresh, register} from "./auth.service";
+import {changePassword, deleteAccount, login, refresh, register, updateMe} from "./auth.service";
 import {asyncHandler} from "../../utils/asyncHandler";
-import { registerSchema , loginSchema} from "./auth.schemas";
+import { registerSchema , loginSchema, updateMeSchema, changePasswordSchema} from "./auth.schemas";
 import {getRefreshCookieOptions} from "./auth.tokens";
 import type {Request, Response} from 'express';
 
@@ -103,3 +103,65 @@ export const logoutHandler = asyncHandler(async (req: Request, res: Response) =>
     res.clearCookie("refreshToken", {...getRefreshCookieOptions()});
     return res.status(204).send();
 });
+
+export const updateMeHandler = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const patch = updateMeSchema.parse(req.body);
+    const user = await updateMe(userId, patch);
+    if(!user){
+        return res.status(404).json({
+            error: {
+                code: "NOT_FOUND",
+                message: "User not found",
+            },
+        });
+    }
+    return res.status(200).json(user);
+});
+
+/**
+ * Handles password change requests for authenticated users.
+ * 
+ * @param req - Express request object containing the authenticated user and password change data
+ * @param req.user.userId - The ID of the authenticated user whose password will be changed
+ * @param req.body - Request body containing old and new password (validated against changePasswordSchema)
+ * @param res - Express response object
+ * @returns A 204 No Content response on successful password change
+ * @throws Will throw validation error if request body doesn't match changePasswordSchema
+ * @throws Will propagate errors from changePassword function
+ */
+export const changePasswordHandler = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const input = changePasswordSchema.parse(req.body);
+    await changePassword(userId, input);
+    return res.status(204).send();
+});
+
+/**
+ * Handles the deletion of a user account.
+ * 
+ * Deletes the user account associated with the authenticated request and clears the refresh token cookie.
+ * 
+ * @param {Request} req - The Express request object containing the authenticated user's ID
+ * @param {Response} res - The Express response object
+ * @returns {Promise<void>} Returns a 204 No Content response on success, or a 404 Not Found response if the user does not exist
+ * @throws Will not throw, but returns appropriate HTTP status codes for success and error cases
+ */
+export const deleteAccountHandler = asyncHandler(async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+    const result = await deleteAccount(userId);
+
+    if(!result){
+        return res.status(404).json({
+            error: {
+                code: "NOT_FOUND",
+                message: "User not found",
+            },
+        });
+    }
+    
+    res.clearCookie("refreshToken", {...getRefreshCookieOptions()});
+    return res.status(204).send();
+
+});
+    

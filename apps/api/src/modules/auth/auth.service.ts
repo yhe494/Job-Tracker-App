@@ -1,7 +1,10 @@
 import bcrypt from "bcrypt";
 import User from "./auth.model";
-import {LoginInput, RegisterInput} from "./auth.schemas";
+import {ChangePasswordInput, LoginInput, RegisterInput, UpdateMeInput} from "./auth.schemas";
 import {signAccessToken, signRefreshToken, verifyRefreshToken, type AccessTokenPayload} from "./auth.tokens";
+import { Types } from "mongoose";
+import Application from "../applications/applications.model";
+
 
 //Salt rounds for bcrypt
 const SALT_ROUNDS = 12;
@@ -130,4 +133,86 @@ export async function refresh(refreshToken: string) {
   return {
     accessToken: signAccessToken(newPayload),
   };
+}
+
+/**
+ * Updates the current user's profile information.
+ * @param userId - The ID of the user to update. Must be a valid MongoDB ObjectId.
+ * @param patch - An object containing the fields to update.
+ * @returns A promise that resolves to an object containing the updated user's id, email, and name, or null if the user is not found.
+ * @throws Error if the provided userId is not a valid MongoDB ObjectId.
+ */
+export async function updateMe(userId: string, patch: UpdateMeInput){
+  if(!Types.ObjectId.isValid(userId)){
+    throw new Error("Invalid user ID");
+  }
+
+  const updated = await User.findByIdAndUpdate(
+    userId,
+    { $set: patch },
+    { new: true, runValidators: true }
+  );
+  if(!updated){
+    return null;
+  }
+  
+  return {
+    id: updated._id.toString(),
+    email: updated.email,
+    name: updated.name,
+  };
+}
+
+/**
+ * Changes the password for a user.
+ * 
+ * @param userId - The ID of the user whose password should be changed. Must be a valid MongoDB ObjectId.
+ * @param input - The password change input containing the current and new passwords.
+ * @param input.currentPassword - The user's current password for verification.
+ * @param input.newPassword - The new password to set.
+ * @returns A promise that resolves to an object with an `ok` property set to `true` if the password was successfully changed, or `null` if the user is not found.
+ * @throws {Error} If the userId is not a valid MongoDB ObjectId.
+ * @throws {Error} If the current password is incorrect.
+ */
+export async function changePassword(userId: string, input: ChangePasswordInput){
+  if(!Types.ObjectId.isValid(userId)){
+    throw new Error("Invalid user ID");
+  }
+
+  const {currentPassword, newPassword} = input;
+
+  const user = await User.findById(userId).select('+passwordHash');
+  if(!user) return null;
+
+  const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+  if(!ok){
+    throw new Error("Current password is incorrect");
+  }
+
+  const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  user.passwordHash = newHash;
+  await user.save();
+  return {ok: true};
+
+}
+
+/**
+ * Deletes a user account and all associated applications.
+ * @param userId - The ID of the user to delete
+ * @returns A promise that resolves to an object with `ok: true` if deletion was successful, or `null` if the user was not found
+ * @throws {Error} Throws an error if the userId is not a valid MongoDB ObjectId
+ */
+export async function deleteAccount(userId: string){
+  if(!Types.ObjectId.isValid(userId)){
+    throw new Error("Invalid user ID");
+  }
+
+  await Application.deleteMany({userId: new Types.ObjectId(userId)});
+
+  const deleted = await User.findByIdAndDelete(userId);
+
+  if(!deleted) return null;
+
+  return {ok: true};
+
 }
