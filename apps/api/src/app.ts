@@ -5,6 +5,7 @@ import {errorHandler} from './middleware/errorHandler';
 import { getDbStatus } from "./db/mongo";
 import cookieParser from "cookie-parser";
 import authRoutes from "./modules/auth/auth.routes";
+import applicationsRoutes from "./modules/applications/applications.routes";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.get("/api/v1/health", (_req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/applications", applicationsRoutes);
 app.use(errorHandler);
 
 export default app;
