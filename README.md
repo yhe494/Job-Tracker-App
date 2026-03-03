@@ -1,84 +1,253 @@
-# JobTracker
+# JobTracker --- System Design
 
-JobTracker is a full-stack app for managing job applications in one place.
+## Table of Contents
 
-## Stack
+-   [Project Summary](#project-summary)
+-   [Architecture Overview](#architecture-overview)
+-   [Authentication Design](#authentication-design)
+-   [Backend Architecture](#backend-architecture)
+-   [Database Design](#database-design)
+-   [Authorization Model](#authorization-model)
+-   [RESTful API Design](#restful-api-design)
+-   [Frontend Architecture](#frontend-architecture)
+-   [Scalability Considerations](#scalability-considerations)
+-   [Why This Design Matters](#why-this-design-matters)
 
-- Frontend: React + Vite + TypeScript
-- Backend: Express + TypeScript
-- Database: MongoDB
-- Tooling: npm workspaces
+------------------------------------------------------------------------
 
-## Project Layout
+# Project Summary
 
-- `apps/web` — frontend app
-- `apps/api` — backend API
-- `packages/shared` — shared code (for common types/utilities)
+JobTracker is a full-stack web application that enables job applicants
+to securely manage and track their job applications in a centralized
+dashboard.
 
-## Authentication
+Users can:
 
-The API includes a JWT-based authentication flow. After register/login, the server returns an access token and stores the refresh token in an HTTP-only cookie. Protected routes use the access token, and clients can request a new access token through the refresh endpoint without forcing users to sign in again.
+-   Register and securely authenticate\
+-   Create, edit, and delete job applications\
+-   Track application status (Applied, Interviewing, Offer, Rejected)\
+-   Search, filter, sort, and paginate results\
+-   View application statistics on a dashboard\
+-   Manage profile settings and delete their account
 
-Current auth coverage includes register, login, refresh, logout, profile update, password change, and a `me` endpoint for retrieving the authenticated user or deleting the account.
+The system is designed with production-oriented architecture principles,
+focusing on security, scalability, and clean separation of concerns.
 
-| Method | Endpoint |
-| ------ | -------- |
-| POST | `/api/v1/auth/register` |
-| POST | `/api/v1/auth/login` |
-| POST | `/api/v1/auth/refresh` |
-| POST | `/api/v1/auth/logout` |
-| GET | `/api/v1/auth/me` |
-| PATCH | `/api/v1/auth/me` |
-| PATCH | `/api/v1/auth/password` |
-| DELETE | `/api/v1/auth/me` |
+------------------------------------------------------------------------
 
-Note: `GET /api/v1/auth/me` requires `Authorization: Bearer <accessToken>`.
+# Architecture Overview
 
-## Applications API
+JobTracker follows a modern client--server architecture:
 
-Authenticated users can manage their job applications via a protected CRUD API under `/api/v1/applications`.
+    React SPA (Frontend)
+            ↓ HTTPS
+    Express REST API (Backend)
+            ↓
+    MongoDB (Database)
 
-- `POST /api/v1/applications` – create an application
-- `GET /api/v1/applications` – list applications with optional filters (`status`, `q`, `page`, `limit`, `sort`)
-- `GET /api/v1/applications/:id` – get a single application
-- `PATCH /api/v1/applications/:id` – update selected fields
-- `DELETE /api/v1/applications/:id` – delete an application
+## Frontend
 
-## Quick Start
+-   React + TypeScript\
+-   React Router\
+-   Context API for authentication state\
+-   Tailwind CSS\
+-   Centralized API abstraction layer
 
-1. Install dependencies:
+## Backend
 
-   ```bash
-   npm install
-   ```
+-   Node.js + Express\
+-   TypeScript\
+-   MongoDB + Mongoose\
+-   Zod for request validation\
+-   JWT (access + refresh tokens)\
+-   bcrypt for password hashing
 
-2. Create `apps/api/.env`:
+------------------------------------------------------------------------
 
-   ```env
-   NODE_ENV=development
-   PORT=4000
-   CLIENT_ORIGIN=http://localhost:5173
-   MONGODB_URI=mongodb://localhost:27017
-   MONGODB_DB_NAME=jobtracker
-   JWT_ACCESS_SECRET=replace-with-secure-value
-   JWT_REFRESH_SECRET=replace-with-secure-value
-   ```
+# Authentication Design
 
-3. Run the apps (from project root):
+The system uses a JWT-based authentication strategy with short-lived
+access tokens and HTTP-only refresh tokens.
 
-   ```bash
-   npm run dev:api
-   npm run dev:web
-   ```
+## Token Strategy
 
-## Scripts
+Access Token: - Short-lived\
+- Sent via `Authorization: Bearer` header\
+- Stored in memory
 
-- `npm run dev:api` — run API in watch mode
-- `npm run dev:web` — run frontend dev server
+Refresh Token: - Long-lived\
+- Stored in HTTP-only cookie\
+- Used to obtain new access tokens
 
-## Current Scope
+## Authentication Flow
 
-- Authentication flow (register, login, refresh, logout, profile, password, delete account)
-- Protected API foundation with MongoDB connection and health endpoint
-- Authenticated job applications CRUD with filtering and pagination
-- Frontend still using the default Vite + React starter (UI for auth/applications is planned)
+1.  User logs in.\
+2.  Backend returns:
+    -   Access token (JSON response)
+    -   Refresh token (HTTP-only cookie)
+3.  Protected routes require a valid access token.\
+4.  When expired, frontend calls `/auth/refresh`.\
+5.  Backend verifies refresh token and issues a new access token.
+
+This approach minimizes XSS exposure, keeps the API stateless, and
+supports horizontal scaling.
+
+------------------------------------------------------------------------
+
+# Backend Architecture
+
+The backend follows a layered structure:
+
+    Route → Controller → Service → Model → Database
+
+## Responsibilities
+
+Routes\
+- Define endpoints\
+- Attach middleware (authentication, validation)
+
+Controllers\
+- Handle HTTP layer\
+- Parse inputs\
+- Format responses
+
+Services\
+- Contain business logic\
+- Enforce ownership rules\
+- Interact with database models
+
+Models\
+- Define schema\
+- Define indexes\
+- Apply database-level validation
+
+This design ensures maintainability, scalability, and clear separation
+of concerns.
+
+------------------------------------------------------------------------
+
+# Database Design
+
+## User Model
+
+-   Unique email (indexed)\
+-   Hashed password (not selectable by default)\
+-   Optional name\
+-   Automatic timestamps
+
+## Application Model
+
+-   userId (indexed)\
+-   company\
+-   roleTitle\
+-   status (enum)\
+-   Optional dates (applied, interview, offer, rejection)\
+-   Automatic timestamps
+
+## Index Strategy
+
+Compound indexes optimize:
+
+-   Per-user queries\
+-   Status filtering\
+-   Sorted pagination
+
+Example:
+
+    { userId: 1, updatedAt: -1 }
+    { userId: 1, status: 1, updatedAt: -1 }
+
+------------------------------------------------------------------------
+
+# Authorization Model
+
+All application queries enforce user ownership:
+
+    { _id: applicationId, userId: authenticatedUserId }
+
+This prevents cross-user data access and horizontal privilege
+escalation.
+
+------------------------------------------------------------------------
+
+# RESTful API Design
+
+## Auth Endpoints
+
+    POST   /api/v1/auth/register
+    POST   /api/v1/auth/login
+    POST   /api/v1/auth/refresh
+    POST   /api/v1/auth/logout
+    GET    /api/v1/auth/me
+    PATCH  /api/v1/auth/profile
+    DELETE /api/v1/auth/account
+
+## Application Endpoints
+
+    GET    /api/v1/applications
+    POST   /api/v1/applications
+    GET    /api/v1/applications/:id
+    PATCH  /api/v1/applications/:id
+    DELETE /api/v1/applications/:id
+    GET    /api/v1/applications/stats
+
+Features supported:
+
+-   Filtering\
+-   Searching\
+-   Pagination\
+-   Sorting\
+-   Ownership validation
+
+------------------------------------------------------------------------
+
+# Frontend Architecture
+
+The frontend is a single-page application built with React.
+
+Core patterns:
+
+-   AuthContext manages authentication state\
+-   RequireAuth protects private routes\
+-   Centralized API abstraction layer\
+-   Optimistic UI updates for CRUD operations\
+-   Derived state via memoization
+
+The UI is styled with Tailwind CSS for responsiveness and consistent
+design.
+
+------------------------------------------------------------------------
+
+# Scalability Considerations
+
+The API is stateless, allowing:
+
+-   Horizontal scaling\
+-   Load balancing\
+-   Containerization\
+-   Cloud deployment
+
+Future improvements could include:
+
+-   Rate limiting\
+-   Redis-based refresh token invalidation\
+-   Role-based access control\
+-   Audit logging\
+-   Email verification
+
+------------------------------------------------------------------------
+
+# Why This Design Matters
+
+This project demonstrates:
+
+-   Secure authentication implementation\
+-   Clean RESTful API design\
+-   Full CRUD with pagination and filtering\
+-   Proper database indexing strategy\
+-   Layered backend architecture\
+-   Frontend-backend contract consistency\
+-   Production-oriented security considerations
+
+It reflects a realistic SaaS-style architecture rather than a basic CRUD
+demo.

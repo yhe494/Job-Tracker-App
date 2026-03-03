@@ -113,6 +113,47 @@ export async function listApplications(userId: string, query: ListApplicationsQu
   };
 }
 
+export async function getApplicationStats(userId: string) {
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new Error("Invalid user id");
+  }
+
+  const pipeline = [
+    { $match: { userId: new Types.ObjectId(userId) } },
+    {
+      $group: {
+        _id: "$status",
+        count: { $sum: 1 },
+      },
+    },
+  ];
+
+  const results: { _id: string; count: number }[] = await Application.aggregate(pipeline);
+
+  const summary: Record<string, number> = {
+    applied: 0,
+    interviewing: 0,
+    offer: 0,
+    rejected: 0,
+  };
+
+  for (const row of results) {
+    if (row._id in summary) {
+      summary[row._id] = row.count;
+    }
+  }
+
+  const total = Object.values(summary).reduce((sum, n) => sum + n, 0);
+
+  return {
+    total,
+    applied: summary.applied,
+    interviewing: summary.interviewing,
+    offer: summary.offer,
+    rejected: summary.rejected,
+  };
+}
+
 /**
  * Retrieves an application by its ID for a specific user.
  * @param userId - The ID of the user who owns the application

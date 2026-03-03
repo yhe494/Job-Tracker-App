@@ -10,6 +10,8 @@ export type AuthContextType = {
   register: (input: { email: string; password: string; name?: string }) => Promise<void>;
   logout: () => Promise<void>;
   refresh: () => Promise<void>;
+  updateProfile: (input: { name?: string }) => Promise<void>;
+  deleteAccount: () => Promise<void>;
 };
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -41,6 +43,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await authApi.refresh();
   }
 
+   async function updateProfile(input: { name?: string }): Promise<void> {
+    const updated = await authApi.updateMe(input);
+    setUser(updated);
+  }
+
+  async function deleteAccount(): Promise<void> {
+    await authApi.deleteAccount();
+    setUser(null);
+  }
+
   useEffect(() => {
     (async () => {
       try {
@@ -55,7 +67,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, register, logout, refresh, updateProfile, deleteAccount }}
+    >
       {children}
     </AuthContext.Provider>
   );
