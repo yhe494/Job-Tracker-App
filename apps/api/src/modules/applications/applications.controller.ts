@@ -1,4 +1,4 @@
-import { createApplication, listApplications , getApplicationById, updateApplication, deleteApplicationById} from "./applications.service";
+import { createApplication, listApplications , getApplicationById, updateApplication, deleteApplicationById, getApplicationStats} from "./applications.service";
 import { asyncHandler } from "../../utils/asyncHandler";
 import type {Request, Response} from 'express';
 import { createApplicationSchema, listApplicationsQuerySchema } from "./applications.schemas";
@@ -55,6 +55,16 @@ export const listApplicationsHandler = asyncHandler(
         return res.status(200).json(result);
     }
 )
+
+export const getApplicationStatsHandler = asyncHandler(
+  async (req: Request, res: Response) => {
+    const userId = req.user!.userId;
+
+    const stats = await getApplicationStats(userId);
+
+    return res.status(200).json(stats);
+  }
+);
 
 /**
  * Handles retrieving an application by its ID.

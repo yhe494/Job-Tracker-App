@@ -60,7 +60,7 @@ export function RegisterPage() {
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#0B4B4A] text-white">
                 <span className="text-lg font-semibold">{"{ }"}</span>
               </div>
-              <div className="text-xl font-semibold text-slate-900">JobTrackr</div>
+              <div className="text-xl font-semibold text-slate-900">JobTracker</div>
             </div>
 
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">

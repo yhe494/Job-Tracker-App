@@ -186,7 +186,7 @@ export function LoginPage() {
             <div className="mt-10 max-w-lg">
               <div className="text-4xl leading-none opacity-70">“</div>
               <p className="mt-3 text-lg leading-8 text-white/85">
-                “JobTrackr keeps everything organized. I can see what I applied to, what’s next,
+                “JobTracker keeps everything organized. I can see what I applied to, what’s next,
                 and never miss a follow-up.”
               </p>
 

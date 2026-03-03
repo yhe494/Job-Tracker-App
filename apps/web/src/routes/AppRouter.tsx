@@ -2,7 +2,9 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LoginPage } from "../pages/LoginPage";
 import { RegisterPage } from "../pages/RegisterPage";
 import { DashboardPage } from "../pages/DashboardPage";
+import { SettingsPage } from "../pages/SettingsPage";
 import { RequireAuth } from "./RequireAuth";
+import { ApplicationsPage } from "../pages/ApplicationsPage";
 
 export function AppRouter() {
   return (
@@ -20,7 +22,25 @@ export function AppRouter() {
           }
         />
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route
+          path="/applications"
+          element={
+            <RequireAuth>
+              <ApplicationsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <RequireAuth>
+              <SettingsPage />
+            </RequireAuth>
+          }
+        />
+
+        <Route path="*" element={<Navigate to="/applications" replace />} />
       </Routes>
     </BrowserRouter>
   );
