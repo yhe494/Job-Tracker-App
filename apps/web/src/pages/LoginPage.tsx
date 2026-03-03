@@ -78,8 +78,12 @@ export function LoginPage() {
                 try {
                   await login({ email, password });
                   nav("/dashboard");
-                } catch (err: any) {
-                  setError(err?.message ?? "Login failed");
+                } catch (err: unknown) {
+                  const message =
+                    err instanceof Error && err.message.trim().length > 0
+                      ? err.message
+                      : "Login failed";
+                  setError(message);
                 } finally {
                   setSubmitting(false);
                 }

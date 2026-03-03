@@ -79,8 +79,12 @@ export function RegisterPage() {
                 try {
                   await register({ email, password, name: name || undefined });
                   nav("/dashboard");
-                } catch (err: any) {
-                  setError(err?.message ?? "Registration failed");
+                } catch (err: unknown) {
+                  const message =
+                    err instanceof Error && err.message.trim().length > 0
+                      ? err.message
+                      : "Registration failed";
+                  setError(message);
                 } finally {
                   setSubmitting(false);
                 }
