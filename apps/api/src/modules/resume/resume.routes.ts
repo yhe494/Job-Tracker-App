@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { uploadResume } from "./resume.controller";
+import { uploadResume, matchUploadedResume } from "./resume.controller";
 
 const router = Router();
 
@@ -23,5 +23,6 @@ const upload = multer({
 });
 
 router.post("/extract-text", upload.single("resume"), uploadResume);
+router.post("/match", upload.single("resume"), matchUploadedResume);
 
 export default router;
