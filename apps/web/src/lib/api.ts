@@ -87,11 +87,15 @@ export async function api<T>(
   const finalHeaders: HeadersInit = {
     ...(headers ?? {}),
   };
-
+  const isFormData = rest.body instanceof FormData;
   // Default JSON content type when body is present and caller didn't set it.
-  if (rest.body && !(finalHeaders as Record<string, string>)["Content-Type"]) {
-    (finalHeaders as Record<string, string>)["Content-Type"] = "application/json";
-  }
+if (
+  rest.body &&
+  !isFormData &&
+  !(finalHeaders as Record<string, string>)["Content-Type"]
+) {
+  (finalHeaders as Record<string, string>)["Content-Type"] = "application/json";
+}
 
   if (auth && accessToken) {
     (finalHeaders as Record<string, string>)["Authorization"] = `Bearer ${accessToken}`;

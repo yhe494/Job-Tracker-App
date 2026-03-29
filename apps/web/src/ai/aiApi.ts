@@ -1,3 +1,4 @@
+
 import { api } from "../lib/api";
 
 export interface ResumeMatchRequest {
@@ -33,3 +34,37 @@ export async function postResumeMatch(payload: ResumeMatchRequest) {
         },
     });
 }
+
+/**
+ * Response object for resume matching operations that include file processing.
+ * @interface ResumeMatchWithFileResponse
+ * @property {boolean} success - Indicates whether the resume matching operation completed successfully.
+ * @property {Object} data - Container object for the matching results and extracted content.
+ * @property {string} data.extractedText - The raw text extracted from the resume file.
+ * @property {ResumeMatchResult} data.matchResult - The result of matching the resume against job requirements.
+ */
+export interface ResumeMatchWithFileResponse{
+    success: boolean;
+    data: {
+        extractedText: string;
+        matchResult: ResumeMatchResult;
+    };
+}
+
+/**
+ * Matches a resume against a job description.
+ * @param file - The resume file to be matched
+ * @param jobDescription - The job description to match against
+ * @returns A promise that resolves to the resume match response
+ */
+export async function postResumeMatchWithFile(file:File, jobDescription:string){
+    const formData = new FormData();
+    formData.append("resume", file);
+    formData.append("jobDescription", jobDescription);
+
+    return api<ResumeMatchWithFileResponse>("/api/v1/resume/match", {
+        method: "POST",
+        body: formData,
+    });
+}
+

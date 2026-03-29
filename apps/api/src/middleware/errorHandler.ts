@@ -74,6 +74,15 @@ export function errorHandler(
         })
     }
     //other errors
+    if (err?.type === 'entity.too.large') {
+        return res.status(413).json({
+            error: {
+                code: 'PAYLOAD_TOO_LARGE',
+                message: 'Request payload is too large. Please shorten the text input or upload a PDF resume.',
+            }
+        })
+    }
+
     if(typeof err?.status === "number" && err?.code){
         return res.status(err.status).json({
             error:{
