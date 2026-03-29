@@ -11,11 +11,33 @@ import resumeRoutes from "./modules/resume/resume.routes";
 
 const app = express();
 
-app.use(express.json());
+function normalizeOrigin(origin: string) {
+  return origin.trim().replace(/\/$/, "");
+}
+
+const allowedOrigins = env.CLIENT_ORIGIN.split(",")
+  .map((value) => normalizeOrigin(value))
+  .filter(Boolean);
+
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: env.CLIENT_ORIGIN,
+    origin: (origin, callback) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+
+      const requestOrigin = normalizeOrigin(origin);
+      if (allowedOrigins.includes(requestOrigin)) {
+        callback(null, true);
+        return;
+      }
+
+      callback(new Error(`CORS blocked for origin: ${origin}`));
+    },
     credentials: true,
   })
 );
