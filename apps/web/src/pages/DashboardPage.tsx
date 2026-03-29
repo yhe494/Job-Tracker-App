@@ -62,6 +62,12 @@ export function DashboardPage() {
               >
                 Applications
               </Link>
+              <Link
+                to="/resume-match"
+                className="rounded-full px-3 py-1 hover:text-slate-900 hover:bg-slate-100"
+              >
+                Resume Match
+              </Link>
             </nav>
           </div>
 
