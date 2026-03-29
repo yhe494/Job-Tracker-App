@@ -17,3 +17,21 @@ export const resumeMatchResponseSchema = z.object({
     suggestions: z.array(z.string()),
     summary: z.string(),
 })
+
+/**
+ * Zod schema for validating resume match request data.
+ * 
+ * @typedef {Object} ResumeMatchRequest
+ * @property {string} resumeText - The resume text to be matched. Must be between 50 and 15000 characters (whitespace trimmed).
+ * @property {string} jobDescription - The job description to match against. Must be between 50 and 15000 characters (whitespace trimmed).
+ * 
+ * @throws {ZodError} When resumeText or jobDescription is less than 50 characters or exceeds 15000 characters.
+ */
+export const resumeMatchRequestSchema = z.object({
+  resumeText: z.string().trim().min(50, "Resume text is too short").max(15000),
+  jobDescription: z
+    .string()
+    .trim()
+    .min(50, "Job description is too short")
+    .max(15000),
+});
