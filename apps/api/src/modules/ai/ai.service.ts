@@ -6,6 +6,21 @@ const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
 });
 
+/**
+ * Generates a resume-to-job matching analysis by prompting an AI model and parsing its JSON output.
+ *
+ * The AI is instructed to return a strict JSON object containing:
+ * - `matchScore` (0–100 integer)
+ * - `matchedSkills`
+ * - `missingSkills`
+ * - `suggestions`
+ * - `summary`
+ *
+ * @param resumeText - The candidate's resume content as plain text.
+ * @param jobDescription - The target job description as plain text.
+ * @returns A parsed {@link ResumeMatchResult} object representing the match analysis.
+ * @throws {Error} Throws if the AI response cannot be parsed as valid JSON.
+ */
 export async function generateResumeJobMatch(
     resumeText: string,
     jobDescription: string
