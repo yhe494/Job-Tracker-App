@@ -2,6 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
+import { FieldLabel, TextInput } from "../components/ui/FormControls";
+import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 
 export function SettingsPage() {
   const { user, updateProfile, deleteAccount, logout } = useAuth();
@@ -50,7 +54,7 @@ export function SettingsPage() {
     <div className="min-h-screen bg-slate-50">
       <AppHeader displayName={displayName} onLogout={logout} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8 space-y-8">
+      <PageContainer className="space-y-8">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
           <p className="mt-1 text-sm text-slate-600">Manage your personal info and account.</p>
@@ -62,16 +66,16 @@ export function SettingsPage() {
 
           <div className="mt-5 space-y-4">
             <div>
-              <label className="text-sm font-medium text-slate-700">Email</label>
+              <FieldLabel>Email</FieldLabel>
               <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
                 {user?.email}
               </div>
             </div>
 
             <div>
-              <label className="text-sm font-medium text-slate-700">Name</label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+              <FieldLabel>Name</FieldLabel>
+              <TextInput
+                className="mt-2"
                 placeholder="Your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -79,25 +83,25 @@ export function SettingsPage() {
             </div>
 
             {message && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+              <AlertMessage variant="success">
                 {message}
-              </div>
+              </AlertMessage>
             )}
 
             {error && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <AlertMessage>
                 {error}
-              </div>
+              </AlertMessage>
             )}
 
-            <button
+            <PrimaryButton
               type="button"
               onClick={onSaveProfile}
               disabled={saving}
-              className="mt-2 inline-flex items-center justify-center rounded-xl bg-[#0B4B4A] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
+              className="mt-2"
             >
               {saving ? "Saving..." : "Save changes"}
-            </button>
+            </PrimaryButton>
           </div>
         </div>
 
@@ -108,16 +112,16 @@ export function SettingsPage() {
             Deleting your account will remove all of your applications and cannot be undone.
           </p>
 
-          <button
+          <SecondaryButton
             type="button"
             onClick={onDeleteAccount}
             disabled={deleting}
-            className="mt-4 inline-flex items-center justify-center rounded-xl border border-rose-300 bg-white px-5 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
+            className="mt-4 border-rose-300 px-5 py-3 text-rose-700 hover:bg-rose-100"
           >
             {deleting ? "Deleting..." : "Delete account"}
-          </button>
+          </SecondaryButton>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }
