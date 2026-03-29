@@ -4,6 +4,8 @@ import { useAuth } from "../auth/useAuth";
 import { ApiError } from "../lib/api";
 import { getApplicationStats, type ApplicationStats } from "../applications/applicationsApi";
 import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
 
 export function DashboardPage() {
   const { user, logout } = useAuth();
@@ -37,7 +39,7 @@ export function DashboardPage() {
     <div className="min-h-screen bg-slate-50">
       <AppHeader activeTab="dashboard" displayName={displayName} onLogout={logout} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <PageContainer>
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-slate-900">Welcome back, {displayName}</h1>
@@ -63,9 +65,9 @@ export function DashboardPage() {
         </div>
 
         {error && (
-          <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          <AlertMessage className="mb-4">
             {error}
-          </div>
+          </AlertMessage>
         )}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,7 +96,7 @@ export function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     </div>
   );
 }

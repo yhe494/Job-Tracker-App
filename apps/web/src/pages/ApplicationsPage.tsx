@@ -11,6 +11,8 @@ import {
 } from "../applications/applicationsApi";
 import { useAuth } from "../auth/useAuth";
 import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
   { value: "applied", label: "Applied" },
@@ -200,7 +202,7 @@ export function ApplicationsPage() {
     <div className="min-h-screen bg-slate-50">
       <AppHeader activeTab="applications" displayName={displayName} onLogout={logout} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8">
+      <PageContainer>
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-slate-900">Hello {displayName}</h1>
           <p className="mt-1 text-sm text-slate-600">
@@ -266,9 +268,9 @@ export function ApplicationsPage() {
           </div>
 
           {error && (
-            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <AlertMessage className="mt-4">
               {error}
-            </div>
+            </AlertMessage>
           )}
         </div>
 
@@ -471,7 +473,7 @@ export function ApplicationsPage() {
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

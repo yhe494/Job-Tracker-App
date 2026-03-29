@@ -5,6 +5,10 @@ import type { ResumeMatchResult } from "../ai/aiApi";
 import { useAuth } from "../auth/useAuth";
 import { createApplication, type ApplicationStatus } from "../applications/applicationsApi";
 import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
+import { FieldLabel, TextAreaInput, TextInput, SelectInput } from "../components/ui/FormControls";
+import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 
 export default function ResumeMatchPage() {
   const nav = useNavigate();
@@ -130,7 +134,7 @@ export default function ResumeMatchPage() {
     <div className="min-h-screen bg-slate-50">
       <AppHeader activeTab="resume-match" displayName={displayName} onLogout={logout} />
 
-      <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
+      <PageContainer className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold text-slate-900">Resume Match</h1>
           <p className="mt-1 text-sm text-slate-600">
@@ -170,55 +174,54 @@ export default function ResumeMatchPage() {
 
             {resumeMode === "text" ? (
               <div>
-                <label className="text-sm font-medium text-slate-700">Resume</label>
-                <textarea
+                <FieldLabel>Resume</FieldLabel>
+                <TextAreaInput
                   value={resumeText}
                   onChange={(e) => setResumeText(e.target.value)}
                   rows={10}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                   placeholder="Paste your resume content"
                 />
               </div>
             ) : (
               <div>
-                <label className="text-sm font-medium text-slate-700">Resume PDF</label>
-                <input
+                <FieldLabel>Resume PDF</FieldLabel>
+                <TextInput
                   type="file"
                   accept="application/pdf"
                   onChange={(e) => {
                     const file = e.target.files?.[0] ?? null;
                     setResumeFile(file);
                   }}
-                  className="mt-2 block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                  className="mt-2 block file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
                 />
                 {resumeFile && <p className="mt-2 text-sm text-slate-600">Selected: {resumeFile.name}</p>}
               </div>
             )}
 
             <div>
-              <label className="text-sm font-medium text-slate-700">Job Description</label>
-              <textarea
+              <FieldLabel>Job Description</FieldLabel>
+              <TextAreaInput
                 value={jobDescription}
                 onChange={(e) => setJobDescription(e.target.value)}
                 rows={10}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                className="mt-2"
                 placeholder="Paste the role description"
               />
             </div>
 
-            <button
+            <PrimaryButton
               type="submit"
               disabled={loading}
-              className="inline-flex items-center justify-center rounded-xl bg-[#0B4B4A] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
             >
               {loading ? "Analyzing..." : "Analyze"}
-            </button>
+            </PrimaryButton>
           </form>
 
           {error && (
-            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <AlertMessage className="mt-4">
               {error}
-            </div>
+            </AlertMessage>
           )}
         </div>
 
@@ -226,13 +229,12 @@ export default function ResumeMatchPage() {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="text-lg font-semibold text-slate-900">Match Score: {result.matchScore}%</h2>
-              <button
+              <SecondaryButton
                 type="button"
                 onClick={openAddToApplicationModal}
-                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 Add to My Application
-              </button>
+              </SecondaryButton>
             </div>
 
             <div>
@@ -274,7 +276,7 @@ export default function ResumeMatchPage() {
             </div>
           </div>
         )}
-      </div>
+      </PageContainer>
 
       {showAddModal && (
         <div className="fixed inset-0 z-30 flex items-center justify-center bg-slate-900/40 px-4">
@@ -288,51 +290,51 @@ export default function ResumeMatchPage() {
 
             <form onSubmit={handleCreateApplication} className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-slate-700">Company</label>
-                <input
+                <FieldLabel>Company</FieldLabel>
+                <TextInput
                   value={applicationCompany}
                   onChange={(e) => setApplicationCompany(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                   placeholder="e.g. Stripe"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Position Name</label>
-                <input
+                <FieldLabel>Position Name</FieldLabel>
+                <TextInput
                   value={applicationRoleTitle}
                   onChange={(e) => setApplicationRoleTitle(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                   placeholder="e.g. Software Engineer"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Location</label>
-                <input
+                <FieldLabel>Location</FieldLabel>
+                <TextInput
                   value={applicationLocation}
                   onChange={(e) => setApplicationLocation(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                   placeholder="e.g. Toronto, ON"
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Job URL</label>
-                <input
+                <FieldLabel>Job URL</FieldLabel>
+                <TextInput
                   value={applicationJobUrl}
                   onChange={(e) => setApplicationJobUrl(e.target.value)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                   placeholder="https://..."
                 />
               </div>
 
               <div>
-                <label className="text-sm font-medium text-slate-700">Status</label>
-                <select
+                <FieldLabel>Status</FieldLabel>
+                <SelectInput
                   value={applicationStatus}
                   onChange={(e) => setApplicationStatus(e.target.value as ApplicationStatus)}
-                  className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  className="mt-2"
                 >
                   <option value="" disabled>
                     Select status
@@ -341,30 +343,29 @@ export default function ResumeMatchPage() {
                   <option value="interviewing">Interviewing</option>
                   <option value="offer">Offer</option>
                   <option value="rejected">Rejected</option>
-                </select>
+                </SelectInput>
               </div>
 
               {addError && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                <AlertMessage>
                   {addError}
-                </div>
+                </AlertMessage>
               )}
 
               <div className="flex items-center justify-end gap-3 pt-1">
-                <button
+                <SecondaryButton
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
                   Cancel
-                </button>
-                <button
+                </SecondaryButton>
+                <PrimaryButton
                   type="submit"
                   disabled={adding}
-                  className="inline-flex items-center justify-center rounded-xl bg-[#0B4B4A] px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
+                  className="px-4 py-2.5"
                 >
                   {adding ? "Adding..." : "Save Application"}
-                </button>
+                </PrimaryButton>
               </div>
             </form>
           </div>
