@@ -1,6 +1,8 @@
+
 import OpenAI from "openai";
 import {env} from "../../config/env";
 import {ResumeMatchResult} from "./ai.types";
+import{resumeMatchResponseSchema} from "./ai.schema";
 
 const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY,
@@ -60,9 +62,9 @@ Job Description:
     });
     const text = response.output_text;
     try{
-        return JSON.parse(text) as ResumeMatchResult;
-
-    }catch{
+        const parsed = JSON.parse(text);
+        return resumeMatchResponseSchema.parse(parsed);
+    }catch(error){
         throw new Error("Failed to parse AI response");
     }
 }
