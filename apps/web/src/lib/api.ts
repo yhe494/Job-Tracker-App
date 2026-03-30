@@ -25,7 +25,6 @@ const API_URL = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\
 if (!API_URL) {
   // Fail fast in dev so you don't silently call the wrong origin.
   // (Vite requires env vars to be prefixed with VITE_)
-  // eslint-disable-next-line no-console
   console.warn("VITE_API_URL is not set. Create apps/web/.env.local with VITE_API_URL=http://localhost:4000");
 }
 
@@ -89,13 +88,13 @@ export async function api<T>(
   };
   const isFormData = rest.body instanceof FormData;
   // Default JSON content type when body is present and caller didn't set it.
-if (
-  rest.body &&
-  !isFormData &&
-  !(finalHeaders as Record<string, string>)["Content-Type"]
-) {
-  (finalHeaders as Record<string, string>)["Content-Type"] = "application/json";
-}
+  if (
+    rest.body &&
+    !isFormData &&
+    !(finalHeaders as Record<string, string>)["Content-Type"]
+  ) {
+    (finalHeaders as Record<string, string>)["Content-Type"] = "application/json";
+  }
 
   if (auth && accessToken) {
     (finalHeaders as Record<string, string>)["Authorization"] = `Bearer ${accessToken}`;

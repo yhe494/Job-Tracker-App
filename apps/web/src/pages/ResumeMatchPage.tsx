@@ -135,100 +135,138 @@ export default function ResumeMatchPage() {
       <AppHeader activeTab="resume-match" displayName={displayName} onLogout={logout} />
 
       <PageContainer className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Resume Match</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Compare your resume against a job description and get targeted improvement tips.
-          </p>
-        </div>
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
+            <div className="border-b border-slate-200 px-6 py-7 sm:px-8 lg:border-b-0 lg:border-r">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0B4B4A]">
+                Resume match
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+                Compare your resume against a role
+              </h1>
+              <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+                Paste a resume or upload a PDF, then review the match score, missing skills, and
+                improvement ideas in a cleaner results layout.
+              </p>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
+              <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+                <div>
+                  <div className="inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                    <button
+                      type="button"
+                      onClick={() => handleResumeModeChange("text")}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                        resumeMode === "text"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      Input Resume
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleResumeModeChange("upload")}
+                      className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
+                        resumeMode === "upload"
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-600 hover:text-slate-900"
+                      }`}
+                    >
+                      Upload Resume
+                    </button>
+                  </div>
+                </div>
 
-              <div className="mt-2 inline-flex rounded-xl border border-slate-200 bg-slate-50 p-1">
-                <button
-                  type="button"
-                  onClick={() => handleResumeModeChange("text")}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                    resumeMode === "text"
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
+                {resumeMode === "text" ? (
+                  <div>
+                    <FieldLabel>Resume</FieldLabel>
+                    <TextAreaInput
+                      value={resumeText}
+                      onChange={(e) => setResumeText(e.target.value)}
+                      rows={10}
+                      className="mt-2"
+                      placeholder="Paste your resume content"
+                    />
+                  </div>
+                ) : (
+                  <div>
+                    <FieldLabel>Resume PDF</FieldLabel>
+                    <TextInput
+                      type="file"
+                      accept="application/pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] ?? null;
+                        setResumeFile(file);
+                      }}
+                      className="mt-2 block file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
+                    />
+                    {resumeFile && <p className="mt-2 text-sm text-slate-600">Selected: {resumeFile.name}</p>}
+                  </div>
+                )}
+
+                <div>
+                  <FieldLabel>Job Description</FieldLabel>
+                  <TextAreaInput
+                    value={jobDescription}
+                    onChange={(e) => setJobDescription(e.target.value)}
+                    rows={10}
+                    className="mt-2"
+                    placeholder="Paste the role description"
+                  />
+                </div>
+
+                <PrimaryButton
+                  type="submit"
+                  disabled={loading}
                 >
-                  Input Resume
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleResumeModeChange("upload")}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium ${
-                    resumeMode === "upload"
-                      ? "bg-white text-slate-900 shadow-sm"
-                      : "text-slate-600 hover:text-slate-900"
-                  }`}
-                >
-                  Upload Resume
-                </button>
-              </div>
+                  {loading ? "Analyzing..." : "Analyze"}
+                </PrimaryButton>
+              </form>
+
+              {error && (
+                <AlertMessage className="mt-4">
+                  {error}
+                </AlertMessage>
+              )}
             </div>
 
-            {resumeMode === "text" ? (
-              <div>
-                <FieldLabel>Resume</FieldLabel>
-                <TextAreaInput
-                  value={resumeText}
-                  onChange={(e) => setResumeText(e.target.value)}
-                  rows={10}
-                  className="mt-2"
-                  placeholder="Paste your resume content"
-                />
+            <aside className="bg-slate-50/80 px-6 py-7 sm:px-8">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
+                What you get
+              </p>
+              <div className="mt-5 space-y-5">
+                <div className="border-l-2 border-[#0B4B4A] pl-4">
+                  <div className="text-sm font-medium text-slate-900">A quick score</div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    See how closely your resume aligns with the role before you apply.
+                  </p>
+                </div>
+                <div className="border-l-2 border-slate-300 pl-4">
+                  <div className="text-sm font-medium text-slate-900">Missing skills</div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Surface likely gaps so you can strengthen the resume or prepare talking points.
+                  </p>
+                </div>
+                <div className="border-l-2 border-slate-300 pl-4">
+                  <div className="text-sm font-medium text-slate-900">Next action</div>
+                  <p className="mt-1 text-sm text-slate-600">
+                    Save the job directly to your tracker when the role looks promising.
+                  </p>
+                </div>
               </div>
-            ) : (
-              <div>
-                <FieldLabel>Resume PDF</FieldLabel>
-                <TextInput
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0] ?? null;
-                    setResumeFile(file);
-                  }}
-                  className="mt-2 block file:mr-3 file:rounded-lg file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200"
-                />
-                {resumeFile && <p className="mt-2 text-sm text-slate-600">Selected: {resumeFile.name}</p>}
-              </div>
-            )}
-
-            <div>
-              <FieldLabel>Job Description</FieldLabel>
-              <TextAreaInput
-                value={jobDescription}
-                onChange={(e) => setJobDescription(e.target.value)}
-                rows={10}
-                className="mt-2"
-                placeholder="Paste the role description"
-              />
-            </div>
-
-            <PrimaryButton
-              type="submit"
-              disabled={loading}
-            >
-              {loading ? "Analyzing..." : "Analyze"}
-            </PrimaryButton>
-          </form>
-
-          {error && (
-            <AlertMessage className="mt-4">
-              {error}
-            </AlertMessage>
-          )}
-        </div>
+            </aside>
+          </div>
+        </section>
 
         {result && (
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm space-y-5">
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <h2 className="text-lg font-semibold text-slate-900">Match Score: {result.matchScore}%</h2>
+          <section className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+            <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0B4B4A]">
+                  Result
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold text-slate-900">Match Score: {result.matchScore}%</h2>
+              </div>
               <SecondaryButton
                 type="button"
                 onClick={openAddToApplicationModal}
@@ -237,44 +275,42 @@ export default function ResumeMatchPage() {
               </SecondaryButton>
             </div>
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Matched Skills
-              </h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                {result.matchedSkills.map((skill) => (
-                  <li key={skill}>{skill}</li>
-                ))}
-              </ul>
-            </div>
+            <div className="grid gap-0 lg:grid-cols-2">
+              <div className="border-b border-slate-200 px-6 py-6 sm:px-8 lg:border-b-0 lg:border-r">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Matched Skills
+                </h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                  {result.matchedSkills.map((skill) => (
+                    <li key={skill}>{skill}</li>
+                  ))}
+                </ul>
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Missing Skills
-              </h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                {result.missingSkills.map((skill) => (
-                  <li key={skill}>{skill}</li>
-                ))}
-              </ul>
-            </div>
+                <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-slate-500">
+                  Missing Skills
+                </h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                  {result.missingSkills.map((skill) => (
+                    <li key={skill}>{skill}</li>
+                  ))}
+                </ul>
+              </div>
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-                Suggestions
-              </h3>
-              <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-                {result.suggestions.map((suggestion, index) => (
-                  <li key={`${suggestion}-${index}`}>{suggestion}</li>
-                ))}
-              </ul>
-            </div>
+              <div className="px-6 py-6 sm:px-8">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Suggestions</h3>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                  {result.suggestions.map((suggestion, index) => (
+                    <li key={`${suggestion}-${index}`}>{suggestion}</li>
+                  ))}
+                </ul>
 
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Summary</h3>
-              <p className="mt-2 text-sm text-slate-700">{result.summary}</p>
+                <div className="mt-8 rounded-2xl border border-slate-200 bg-slate-50/80 p-4">
+                  <h3 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Summary</h3>
+                  <p className="mt-3 text-sm leading-6 text-slate-700">{result.summary}</p>
+                </div>
+              </div>
             </div>
-          </div>
+          </section>
         )}
       </PageContainer>
 
