@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
 import { AlertMessage } from "../components/ui/AlertMessage";
-import { formControlClassName } from "../components/ui/FormControls";
+import { formControlClassName } from "../components/ui/formControlClassName";
 import { AuthSplitLayout } from "../components/auth/AuthSplitLayout";
 
 function MailIcon(props: React.SVGProps<SVGSVGElement>) {
