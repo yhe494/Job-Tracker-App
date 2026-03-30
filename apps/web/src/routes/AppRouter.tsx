@@ -5,6 +5,7 @@ import { DashboardPage } from "../pages/DashboardPage";
 import { SettingsPage } from "../pages/SettingsPage";
 import { RequireAuth } from "./RequireAuth";
 import { ApplicationsPage } from "../pages/ApplicationsPage";
+import ResumeMatchPage from "../pages/ResumeMatchPage";
 
 export function AppRouter() {
   return (
@@ -39,7 +40,14 @@ export function AppRouter() {
             </RequireAuth>
           }
         />
-
+        <Route
+          path="/resume-match"
+          element={
+            <RequireAuth>
+              <ResumeMatchPage />
+            </RequireAuth>
+          }
+        />
         <Route path="*" element={<Navigate to="/applications" replace />} />
       </Routes>
     </BrowserRouter>

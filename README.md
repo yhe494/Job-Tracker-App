@@ -1,253 +1,234 @@
-# JobTracker --- System Design
+# JobTracker
 
-## Table of Contents
+JobTracker is a full-stack job application tracker built with React, TypeScript, Express, and MongoDB. It helps users manage their application pipeline, review status-based stats, maintain account settings, and compare a resume against a job description.
 
--   [Project Summary](#project-summary)
--   [Architecture Overview](#architecture-overview)
--   [Authentication Design](#authentication-design)
--   [Backend Architecture](#backend-architecture)
--   [Database Design](#database-design)
--   [Authorization Model](#authorization-model)
--   [RESTful API Design](#restful-api-design)
--   [Frontend Architecture](#frontend-architecture)
--   [Scalability Considerations](#scalability-considerations)
--   [Why This Design Matters](#why-this-design-matters)
+## Features
 
-------------------------------------------------------------------------
+- User registration, login, logout, and token refresh
+- Protected frontend routes and authenticated API endpoints
+- Create, update, delete, search, filter, sort, and paginate job applications
+- Dashboard statistics for application progress
+- Profile management, password changes, and account deletion
+- Resume matching with either pasted resume text or uploaded PDF files
+- Centralized frontend API layer and structured backend modules
 
-# Project Summary
+## Tech Stack
 
-JobTracker is a full-stack web application that enables job applicants
-to securely manage and track their job applications in a centralized
-dashboard.
+### Frontend
+
+- React 19
+- TypeScript
+- Vite
+- React Router
+- Tailwind CSS
+
+### Backend
+
+- Node.js
+- Express
+- TypeScript
+- MongoDB with Mongoose
+- Zod validation
+- JWT authentication
+- Multer for PDF uploads
+- OpenAI API integration
+
+## Project Structure
+
+```text
+jobtracker/
+  apps/
+    api/   Express API
+    web/   React frontend
+  package.json
+  README.md
+```
+
+## Main Application Areas
+
+### Authentication
+
+The app uses JWT-based authentication with:
+
+- Access tokens sent in the `Authorization` header
+- Refresh tokens stored in cookies
+- Protected API routes on the backend
+- Protected pages on the frontend
+
+### Applications
+
+Users can manage job applications with fields such as:
+
+- Company
+- Role title
+- Status
+- Description
+- Location
+- Job URL
+- Important dates like applied, interview, offer, and rejection dates
+
+### Resume Match
 
 Users can:
 
--   Register and securely authenticate\
--   Create, edit, and delete job applications\
--   Track application status (Applied, Interviewing, Offer, Rejected)\
--   Search, filter, sort, and paginate results\
--   View application statistics on a dashboard\
--   Manage profile settings and delete their account
+- Paste resume text and compare it against a job description
+- Upload a PDF resume for extraction and matching
+- Review generated match feedback
+- Optionally turn a reviewed role into a saved job application
 
-The system is designed with production-oriented architecture principles,
-focusing on security, scalability, and clean separation of concerns.
+## Getting Started
 
-------------------------------------------------------------------------
+### Prerequisites
 
-# Architecture Overview
+- Node.js 18 or newer
+- npm
+- MongoDB connection string
+- OpenAI API key
 
-JobTracker follows a modern client--server architecture:
+### Install Dependencies
 
-    React SPA (Frontend)
-            ↓ HTTPS
-    Express REST API (Backend)
-            ↓
-    MongoDB (Database)
+From the project root:
 
-## Frontend
+```bash
+npm install
+```
 
--   React + TypeScript\
--   React Router\
--   Context API for authentication state\
--   Tailwind CSS\
--   Centralized API abstraction layer
+### Environment Setup
 
-## Backend
+Create an API environment file:
 
--   Node.js + Express\
--   TypeScript\
--   MongoDB + Mongoose\
--   Zod for request validation\
--   JWT (access + refresh tokens)\
--   bcrypt for password hashing
+```bash
+cp apps/api/.env.example apps/api/.env
+```
 
-------------------------------------------------------------------------
+Update `apps/api/.env` with real values:
 
-# Authentication Design
+```env
+NODE_ENV=development
+PORT=4000
+CLIENT_ORIGIN=http://localhost:5173,http://127.0.0.1:5173
+MONGODB_URI=your_mongodb_connection_string
+MONGODB_DB_NAME=jobtracker
+JWT_ACCESS_SECRET=your_access_secret
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN=7d
+OPENAI_API_KEY=your_openai_api_key
+```
 
-The system uses a JWT-based authentication strategy with short-lived
-access tokens and HTTP-only refresh tokens.
+Create a frontend environment file at `apps/web/.env.local`:
 
-## Token Strategy
+```env
+VITE_API_URL=http://localhost:4000/api/v1
+```
 
-Access Token: - Short-lived\
-- Sent via `Authorization: Bearer` header\
-- Stored in memory
+## Running the Project
 
-Refresh Token: - Long-lived\
-- Stored in HTTP-only cookie\
-- Used to obtain new access tokens
+Start the API:
 
-## Authentication Flow
+```bash
+npm run dev:api
+```
 
-1.  User logs in.\
-2.  Backend returns:
-    -   Access token (JSON response)
-    -   Refresh token (HTTP-only cookie)
-3.  Protected routes require a valid access token.\
-4.  When expired, frontend calls `/auth/refresh`.\
-5.  Backend verifies refresh token and issues a new access token.
+Start the frontend in a separate terminal:
 
-This approach minimizes XSS exposure, keeps the API stateless, and
-supports horizontal scaling.
+```bash
+npm run dev:web
+```
 
-------------------------------------------------------------------------
+Default local URLs:
 
-# Backend Architecture
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:4000`
+
+## Available Scripts
+
+### Root
+
+- `npm run dev:web` starts the frontend workspace
+- `npm run dev:api` starts the backend workspace
+
+### Frontend
+
+Run from `apps/web`:
+
+- `npm run dev`
+- `npm run build`
+- `npm run lint`
+- `npm run preview`
+
+### Backend
+
+Run from `apps/api`:
+
+- `npm run dev`
+- `npm run build`
+- `npm run start`
+
+## API Overview
+
+### Health
+
+- `GET /api/v1/health`
+
+### Auth
+
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+- `PATCH /api/v1/auth/me`
+- `PATCH /api/v1/auth/password`
+- `DELETE /api/v1/auth/me`
+
+### Applications
+
+- `GET /api/v1/applications`
+- `POST /api/v1/applications`
+- `GET /api/v1/applications/:id`
+- `PATCH /api/v1/applications/:id`
+- `DELETE /api/v1/applications/:id`
+- `GET /api/v1/applications/stats`
+
+### Resume and AI
+
+- `POST /api/v1/ai/resume-match`
+- `POST /api/v1/resume/extract-text`
+- `POST /api/v1/resume/match`
+
+## Architecture Notes
 
 The backend follows a layered structure:
 
-    Route → Controller → Service → Model → Database
+```text
+Route -> Controller -> Service -> Model
+```
 
-## Responsibilities
+The frontend uses:
 
-Routes\
-- Define endpoints\
-- Attach middleware (authentication, validation)
+- Route-based page structure
+- Protected routes
+- Shared UI components
+- Centralized API helpers
+- Workspace-based app separation
 
-Controllers\
-- Handle HTTP layer\
-- Parse inputs\
-- Format responses
+## Current Status
 
-Services\
-- Contain business logic\
-- Enforce ownership rules\
-- Interact with database models
+This project already includes:
 
-Models\
-- Define schema\
-- Define indexes\
-- Apply database-level validation
+- Full-stack authentication
+- Application tracking workflow
+- Resume matching flow
+- Frontend and backend TypeScript setup
 
-This design ensures maintainability, scalability, and clear separation
-of concerns.
+Areas that can still be improved:
 
-------------------------------------------------------------------------
+- Automated testing
+- Deployment documentation
+- CI setup
+- API request examples
 
-# Database Design
+## License
 
-## User Model
-
--   Unique email (indexed)\
--   Hashed password (not selectable by default)\
--   Optional name\
--   Automatic timestamps
-
-## Application Model
-
--   userId (indexed)\
--   company\
--   roleTitle\
--   status (enum)\
--   Optional dates (applied, interview, offer, rejection)\
--   Automatic timestamps
-
-## Index Strategy
-
-Compound indexes optimize:
-
--   Per-user queries\
--   Status filtering\
--   Sorted pagination
-
-Example:
-
-    { userId: 1, updatedAt: -1 }
-    { userId: 1, status: 1, updatedAt: -1 }
-
-------------------------------------------------------------------------
-
-# Authorization Model
-
-All application queries enforce user ownership:
-
-    { _id: applicationId, userId: authenticatedUserId }
-
-This prevents cross-user data access and horizontal privilege
-escalation.
-
-------------------------------------------------------------------------
-
-# RESTful API Design
-
-## Auth Endpoints
-
-    POST   /api/v1/auth/register
-    POST   /api/v1/auth/login
-    POST   /api/v1/auth/refresh
-    POST   /api/v1/auth/logout
-    GET    /api/v1/auth/me
-    PATCH  /api/v1/auth/profile
-    DELETE /api/v1/auth/account
-
-## Application Endpoints
-
-    GET    /api/v1/applications
-    POST   /api/v1/applications
-    GET    /api/v1/applications/:id
-    PATCH  /api/v1/applications/:id
-    DELETE /api/v1/applications/:id
-    GET    /api/v1/applications/stats
-
-Features supported:
-
--   Filtering\
--   Searching\
--   Pagination\
--   Sorting\
--   Ownership validation
-
-------------------------------------------------------------------------
-
-# Frontend Architecture
-
-The frontend is a single-page application built with React.
-
-Core patterns:
-
--   AuthContext manages authentication state\
--   RequireAuth protects private routes\
--   Centralized API abstraction layer\
--   Optimistic UI updates for CRUD operations\
--   Derived state via memoization
-
-The UI is styled with Tailwind CSS for responsiveness and consistent
-design.
-
-------------------------------------------------------------------------
-
-# Scalability Considerations
-
-The API is stateless, allowing:
-
--   Horizontal scaling\
--   Load balancing\
--   Containerization\
--   Cloud deployment
-
-Future improvements could include:
-
--   Rate limiting\
--   Redis-based refresh token invalidation\
--   Role-based access control\
--   Audit logging\
--   Email verification
-
-------------------------------------------------------------------------
-
-# Why This Design Matters
-
-This project demonstrates:
-
--   Secure authentication implementation\
--   Clean RESTful API design\
--   Full CRUD with pagination and filtering\
--   Proper database indexing strategy\
--   Layered backend architecture\
--   Frontend-backend contract consistency\
--   Production-oriented security considerations
-
-It reflects a realistic SaaS-style architecture rather than a basic CRUD
-demo.
+This project is currently private and does not define a public license.

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import { AlertMessage } from "../components/ui/AlertMessage";
+import { formControlClassName } from "../components/ui/formControlClassName";
+import { AuthSplitLayout } from "../components/auth/AuthSplitLayout";
 
 function MailIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -50,51 +53,38 @@ export function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
-        {/* LEFT */}
-        <div className="flex items-center justify-center px-6 py-10 lg:px-12">
-          <div className="w-full max-w-md">
-            {/* Brand */}
-            <div className="mb-10 flex items-center gap-3">
-              <div className="grid h-10 w-10 place-items-center rounded-xl bg-[#0B4B4A] text-white">
-                <span className="text-lg font-semibold">{"{ }"}</span>
-              </div>
-              <div className="text-xl font-semibold text-slate-900">JobTracker</div>
-            </div>
-
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
-              Create your account
-            </h1>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Sign up to start tracking your job applications in one place.
-            </p>
-
-            <form
-              className="mt-8 space-y-5"
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setError(null);
-                setSubmitting(true);
-                try {
-                  await register({ email, password, name: name || undefined });
-                  nav("/dashboard");
-                } catch (err: unknown) {
-                  const message =
-                    err instanceof Error && err.message.trim().length > 0
-                      ? err.message
-                      : "Registration failed";
-                  setError(message);
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-            >
+    <AuthSplitLayout
+      title="Create your account"
+      subtitle="Sign up to start tracking your job applications in one place."
+      rightTitle="Stay ahead in your search"
+      quote='"Create an account and keep every application, interview, and offer in one clean view."'
+      footer="Built for your portfolio with Secure auth and Clean CRUD"
+    >
+      <form
+        className="mt-8 space-y-5"
+        onSubmit={async (e) => {
+          e.preventDefault();
+          setError(null);
+          setSubmitting(true);
+          try {
+            await register({ email, password, name: name || undefined });
+            nav("/dashboard");
+          } catch (err: unknown) {
+            const message =
+              err instanceof Error && err.message.trim().length > 0
+                ? err.message
+                : "Registration failed";
+            setError(message);
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+      >
               {/* Name */}
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-700">Name</label>
                 <input
-                  className="w-full rounded-xl border border-slate-200 bg-white py-3 px-4 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                  className={formControlClassName}
                   placeholder="Your name (optional)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -110,7 +100,7 @@ export function RegisterPage() {
                     <MailIcon className="h-5 w-5" />
                   </span>
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                    className={`${formControlClassName} pl-11`}
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -127,7 +117,7 @@ export function RegisterPage() {
                     <LockIcon className="h-5 w-5" />
                   </span>
                   <input
-                    className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                    className={`${formControlClassName} pl-11`}
                     placeholder="Create a password"
                     value={password}
                     type="password"
@@ -138,9 +128,9 @@ export function RegisterPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                <AlertMessage>
                   {error}
-                </div>
+                </AlertMessage>
               )}
 
               <button
@@ -157,32 +147,7 @@ export function RegisterPage() {
                   Sign in
                 </Link>
               </p>
-            </form>
-          </div>
-        </div>
-
-        {/* RIGHT (marketing panel) */}
-        <div className="relative hidden lg:block">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#0B4B4A] via-[#0A5452] to-[#0B3F43]" />
-          <div className="absolute inset-0 opacity-20 [background:radial-gradient(circle_at_20%_20%,white,transparent_45%),radial-gradient(circle_at_80%_30%,white,transparent_50%)]" />
-          <div className="relative flex h-full flex-col justify-center px-14 text-white">
-            <h2 className="text-5xl font-semibold leading-tight tracking-tight">
-              Stay ahead in your search
-            </h2>
-
-            <div className="mt-10 max-w-lg">
-              <div className="text-4xl leading-none opacity-70">“</div>
-              <p className="mt-3 text-lg leading-8 text-white/85">
-                "Create an account and keep every application, interview, and offer in one clean view."
-              </p>
-            </div>
-
-            <div className="mt-16 text-sm text-white/60">
-              Built for your portfolio with Secure auth and Clean CRUD
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </form>
+    </AuthSplitLayout>
   );
 }

@@ -10,7 +10,9 @@ import {
   updateApplication,
 } from "../applications/applicationsApi";
 import { useAuth } from "../auth/useAuth";
-import { Link, useNavigate } from "react-router-dom";
+import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
 
 const STATUS_OPTIONS: { value: ApplicationStatus; label: string }[] = [
   { value: "applied", label: "Applied" },
@@ -45,7 +47,6 @@ function statusBadge(status: ApplicationStatus) {
 
 export function ApplicationsPage() {
   const { user, logout } = useAuth();
-  const nav = useNavigate();
   const displayName = user?.name || user?.email || "there";
   const [items, setItems] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +94,21 @@ export function ApplicationsPage() {
     }),
     [q, status, sort, page]
   );
+
+  const stageSummary = useMemo(() => {
+    return items.reduce(
+      (acc, item) => {
+        acc[item.status] += 1;
+        return acc;
+      },
+      {
+        applied: 0,
+        interviewing: 0,
+        offer: 0,
+        rejected: 0,
+      } satisfies Record<ApplicationStatus, number>
+    );
+  }, [items]);
 
   async function load() {
     setLoading(true);
@@ -199,289 +215,308 @@ export function ApplicationsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Navbar */}
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => nav("/applications")}
-              className="flex items-center gap-2"
-            >
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#0B4B4A] text-white">
-                <span className="text-base font-semibold">{"{ }"}</span>
-              </div>
-              <span className="text-sm font-semibold text-slate-900">JobTracker</span>
-            </button>
+      <AppHeader activeTab="applications" displayName={displayName} onLogout={logout} />
 
-            <nav className="ml-6 hidden gap-4 text-sm font-medium text-slate-600 sm:flex">
-              <Link
-                to="/dashboard"
-                className="rounded-full px-3 py-1 hover:text-slate-900 hover:bg-slate-100"
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/applications"
-                className="rounded-full px-3 py-1 hover:text-slate-900 hover:bg-slate-100 text-slate-900"
-              >
-                Applications
-              </Link>
-            </nav>
-          </div>
+      <PageContainer className="space-y-6">
+        <section className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <div className="grid gap-6 border-b border-slate-200 px-6 py-7 sm:px-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.8fr)]">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0B4B4A]">
+                Application tracker
+              </p>
+              <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">
+                Keep your search organized in one workspace
+              </h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
+                Inspired by cleaner tracker layouts from tools like Teal and Huntr, this page
+                now treats your applications list as the main product surface instead of wrapping
+                every section in a separate card.
+              </p>
 
-          <UserMenu displayName={displayName} onLogout={logout} />
-        </div>
-      </div>
-
-      <div className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-slate-900">Hello {displayName}</h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Keep every application, interview, and offer organized in one clear view.
-          </p>
-        </div>
-        {/* Create card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-4 md:flex-row md:items-end">
-            <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700">Company</label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                placeholder="e.g. Shopify"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
-              />
-            </div>
-
-            <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700">Role Title</label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                placeholder="e.g. Backend Developer"
-                value={roleTitle}
-                onChange={(e) => setRoleTitle(e.target.value)}
-              />
-            </div>
-
-            <div className="flex-1">
-              <label className="text-sm font-medium text-slate-700">Location</label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                placeholder="e.g. Toronto / Remote"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-              />
-            </div>
-
-            <div className="md:w-56">
-              <label className="text-sm font-medium text-slate-700">Status</label>
-              <select
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
-                value={newStatus}
-                onChange={(e) => setNewStatus(e.target.value as ApplicationStatus)}
-              >
-                {STATUS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              type="button"
-              onClick={onCreate}
-              disabled={creating}
-              className="rounded-xl bg-[#0B4B4A] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {creating ? "Creating..." : "Add"}
-            </button>
-          </div>
-
-          {error && (
-            <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              {error}
-            </div>
-          )}
-        </div>
-
-        {/* Filters */}
-        <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-1 gap-3">
-            <input
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-              placeholder="Search company or role..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-            <select
-              className="w-44 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
-              value={status}
-              onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-                setStatus(e.target.value as ApplicationStatus | "")
-              }
-            >
-              <option value="">All statuses</option>
-              {STATUS_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <select
-            className="sm:w-60 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
-            value={sort}
-            onChange={(e: ChangeEvent<HTMLSelectElement>) =>
-              setSort(e.target.value as SortOption)
-            }
-          >
-            <option value="updatedAt:desc">Recently updated</option>
-            <option value="updatedAt:asc">Least recently updated</option>
-            <option value="appliedDate:desc">Applied date (newest)</option>
-            <option value="appliedDate:asc">Applied date (oldest)</option>
-            <option value="company:asc">Company (A–Z)</option>
-            <option value="company:desc">Company (Z–A)</option>
-          </select>
-        </div>
-
-        {/* Table */}
-        <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="px-5 py-4 border-b border-slate-200">
-            <div className="flex items-center justify-between">
-              <div className="text-sm font-semibold text-slate-900">Your applications</div>
-              <div className="text-sm text-slate-600">
-                {loading ? "Loading..." : `${items.length} shown • ${total} total`}
-              </div>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="p-6 text-sm text-slate-600">Loading applications…</div>
-          ) : items.length === 0 ? (
-            <div className="p-6 text-sm text-slate-600">
-              No applications yet. Add your first one above.
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {items.map((app) => (
-                <div key={app.id} className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="min-w-0">
-                    {editingId === app.id ? (
-                      <div className="space-y-2">
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <div className="flex-1">
-                            <label className="text-xs font-medium text-slate-700">Company</label>
-                            <input
-                              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                              value={editCompany}
-                              onChange={(e) => setEditCompany(e.target.value)}
-                            />
-                          </div>
-                          <div className="flex-1">
-                            <label className="text-xs font-medium text-slate-700">Role</label>
-                            <input
-                              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                              value={editRoleTitle}
-                              onChange={(e) => setEditRoleTitle(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex flex-col gap-2 sm:flex-row">
-                          <div className="flex-1">
-                            <label className="text-xs font-medium text-slate-700">Location</label>
-                            <input
-                              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                              value={editLocation}
-                              onChange={(e) => setEditLocation(e.target.value)}
-                            />
-                          </div>
-                          <div className="sm:w-44">
-                            <label className="text-xs font-medium text-slate-700">Status</label>
-                            <select
-                              className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
-                              value={editStatus}
-                              onChange={(e) => setEditStatus(e.target.value as ApplicationStatus)}
-                            >
-                              {STATUS_OPTIONS.map((o) => (
-                                <option key={o.value} value={o.value}>
-                                  {o.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          Updated {formatDate(app.updatedAt)}
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center gap-3">
-                          <div className="truncate text-sm font-semibold text-slate-900">
-                            {app.company}
-                          </div>
-                          <span className={statusBadge(app.status)}>{app.status}</span>
-                        </div>
-                        <div className="mt-1 text-sm text-slate-600">
-                          <span className="font-medium text-slate-700">{app.roleTitle}</span>
-                          {app.location ? <span className="text-slate-400"> • </span> : null}
-                          {app.location ? <span>{app.location}</span> : null}
-                          <span className="text-slate-400"> • </span>
-                          <span>Updated {formatDate(app.updatedAt)}</span>
-                        </div>
-                      </>
-                    )}
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Total roles
                   </div>
-
-                  <div className="flex items-center gap-2 sm:justify-end">
-                    {editingId === app.id ? (
-                      <>
-                        <button
-                          type="button"
-                          onClick={() => onSaveEdit(app.id)}
-                          disabled={savingId === app.id}
-                          className="rounded-xl bg-[#0B4B4A] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
-                        >
-                          {savingId === app.id ? "Saving..." : "Save"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={cancelEdit}
-                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => startEdit(app)}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                      >
-                        Edit
-                      </button>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => onDelete(app.id)}
-                      disabled={busyId === app.id}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
-                    >
-                      {busyId === app.id ? "Deleting..." : "Delete"}
-                    </button>
+                  <div className="mt-2 text-3xl font-semibold text-slate-900">{total}</div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Applied
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-slate-900">
+                    {stageSummary.applied}
                   </div>
                 </div>
-              ))}
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Interviewing
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-slate-900">
+                    {stageSummary.interviewing}
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                  <div className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    Offers
+                  </div>
+                  <div className="mt-2 text-2xl font-semibold text-slate-900">
+                    {stageSummary.offer}
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
 
-        {/* Pagination controls */}
+            <aside className="rounded-3xl border border-slate-200 bg-slate-50/80 p-5">
+              <h2 className="text-base font-semibold text-slate-900">Add a new application</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Capture the basics fast, then manage everything from the tracker below.
+              </p>
+
+              <div className="mt-5 grid gap-4">
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Company</label>
+                  <input
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                    placeholder="e.g. Shopify"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm font-medium text-slate-700">Role title</label>
+                  <input
+                    className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                    placeholder="e.g. Backend Developer"
+                    value={roleTitle}
+                    onChange={(e) => setRoleTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_180px]">
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Location</label>
+                    <input
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                      placeholder="e.g. Toronto / Remote"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-slate-700">Status</label>
+                    <select
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                      value={newStatus}
+                      onChange={(e) => setNewStatus(e.target.value as ApplicationStatus)}
+                    >
+                      {STATUS_OPTIONS.map((o) => (
+                        <option key={o.value} value={o.value}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={onCreate}
+                  disabled={creating}
+                  className="rounded-xl bg-[#0B4B4A] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
+                >
+                  {creating ? "Creating..." : "Add application"}
+                </button>
+
+                {error && (
+                  <AlertMessage>
+                    {error}
+                  </AlertMessage>
+                )}
+              </div>
+            </aside>
+          </div>
+
+          <div className="px-6 py-6 sm:px-8">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Your applications</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Search, sort, and update everything from a single view.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_180px_220px] xl:min-w-[760px]">
+                <input
+                  className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                  placeholder="Search company or role..."
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                />
+                <select
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  value={status}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setStatus(e.target.value as ApplicationStatus | "")
+                  }
+                >
+                  <option value="">All statuses</option>
+                  {STATUS_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                  value={sort}
+                  onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                    setSort(e.target.value as SortOption)
+                  }
+                >
+                  <option value="updatedAt:desc">Recently updated</option>
+                  <option value="updatedAt:asc">Least recently updated</option>
+                  <option value="appliedDate:desc">Applied date (newest)</option>
+                  <option value="appliedDate:asc">Applied date (oldest)</option>
+                  <option value="company:asc">Company (A-Z)</option>
+                  <option value="company:desc">Company (Z-A)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white">
+              <div className="hidden grid-cols-[minmax(0,2fr)_140px_170px] border-b border-slate-200 bg-slate-50/70 px-5 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 md:grid">
+                <div>Role</div>
+                <div>Status</div>
+                <div className="text-right">Actions</div>
+              </div>
+
+              {loading ? (
+                <div className="p-6 text-sm text-slate-600">Loading applications...</div>
+              ) : items.length === 0 ? (
+                <div className="p-6 text-sm text-slate-600">
+                  No applications yet. Add your first one from the panel above.
+                </div>
+              ) : (
+                <div className="divide-y divide-slate-100">
+                  {items.map((app) => (
+                    <div
+                      key={app.id}
+                      className="grid gap-4 px-5 py-5 transition hover:bg-slate-50/70 md:grid-cols-[minmax(0,2fr)_140px_170px] md:items-center"
+                    >
+                      <div className="min-w-0">
+                        {editingId === app.id ? (
+                          <div className="space-y-3">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              <div>
+                                <label className="text-xs font-medium text-slate-700">Company</label>
+                                <input
+                                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                                  value={editCompany}
+                                  onChange={(e) => setEditCompany(e.target.value)}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-slate-700">Role</label>
+                                <input
+                                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                                  value={editRoleTitle}
+                                  onChange={(e) => setEditRoleTitle(e.target.value)}
+                                />
+                              </div>
+                            </div>
+                            <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_180px]">
+                              <div>
+                                <label className="text-xs font-medium text-slate-700">Location</label>
+                                <input
+                                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
+                                  value={editLocation}
+                                  onChange={(e) => setEditLocation(e.target.value)}
+                                />
+                              </div>
+                              <div>
+                                <label className="text-xs font-medium text-slate-700">Status</label>
+                                <select
+                                  className="mt-1 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 focus:border-[#0B4B4A] focus:ring-4"
+                                  value={editStatus}
+                                  onChange={(e) => setEditStatus(e.target.value as ApplicationStatus)}
+                                >
+                                  {STATUS_OPTIONS.map((o) => (
+                                    <option key={o.value} value={o.value}>
+                                      {o.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            </div>
+                            <div className="text-xs text-slate-500">Updated {formatDate(app.updatedAt)}</div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="text-base font-semibold text-slate-900">{app.company}</div>
+                            <div className="mt-1 text-sm text-slate-700">{app.roleTitle}</div>
+                            <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-slate-500">
+                              {app.location ? <span>{app.location}</span> : <span>No location added</span>}
+                              <span className="text-slate-300">•</span>
+                              <span>Updated {formatDate(app.updatedAt)}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="md:justify-self-start">
+                        <span className={statusBadge(app.status)}>{app.status}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2 md:justify-self-end">
+                        {editingId === app.id ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => onSaveEdit(app.id)}
+                              disabled={savingId === app.id}
+                              className="rounded-xl bg-[#0B4B4A] px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
+                            >
+                              {savingId === app.id ? "Saving..." : "Save"}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEdit}
+                              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => startEdit(app)}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                          >
+                            Edit
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onDelete(app.id)}
+                          disabled={busyId === app.id}
+                          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+                        >
+                          {busyId === app.id ? "Deleting..." : "Delete"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+
         {totalPages > 1 && (
-          <div className="mt-6 flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 text-sm text-slate-600 sm:flex-row sm:items-center sm:justify-between">
             <div>
               Page {page} of {totalPages}
             </div>
@@ -505,57 +540,7 @@ export function ApplicationsPage() {
             </div>
           </div>
         )}
-      </div>
-    </div>
-  );
-}
-
-function UserMenu({
-  displayName,
-  onLogout,
-}: {
-  displayName: string;
-  onLogout: () => Promise<void>;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const initial = displayName.trim().charAt(0).toUpperCase() || "U";
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-      >
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0B4B4A] text-xs font-semibold text-white">
-          {initial}
-        </span>
-        <span className="hidden text-sm font-medium text-slate-800 sm:inline">{displayName}</span>
-        <span className="text-slate-400">▾</span>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-lg">
-          <Link
-            to="/settings"
-            className="block px-3 py-2 text-left text-slate-700 hover:bg-slate-50"
-            onClick={() => setOpen(false)}
-          >
-            Settings
-          </Link>
-          <button
-            type="button"
-            onClick={async () => {
-              setOpen(false);
-              await onLogout();
-            }}
-            className="block w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
-          >
-            Log out
-          </button>
-        </div>
-      )}
+      </PageContainer>
     </div>
   );
 }

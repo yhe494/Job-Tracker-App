@@ -1,6 +1,11 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/useAuth";
+import { AppHeader } from "../components/AppHeader";
+import { PageContainer } from "../components/ui/PageContainer";
+import { AlertMessage } from "../components/ui/AlertMessage";
+import { FieldLabel, TextInput } from "../components/ui/FormControls";
+import { PrimaryButton, SecondaryButton } from "../components/ui/Buttons";
 
 export function SettingsPage() {
   const { user, updateProfile, deleteAccount, logout } = useAuth();
@@ -47,158 +52,93 @@ export function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <div className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => nav("/applications")}
-              className="flex items-center gap-2"
-            >
-              <div className="grid h-9 w-9 place-items-center rounded-xl bg-[#0B4B4A] text-white">
-                <span className="text-base font-semibold">{"{ }"}</span>
-              </div>
-              <span className="text-sm font-semibold text-slate-900">JobTracker</span>
-            </button>
+      <AppHeader displayName={displayName} onLogout={logout} />
 
-            <nav className="ml-6 hidden gap-4 text-sm font-medium text-slate-600 sm:flex">
-              <Link
-                to="/dashboard"
-                className="rounded-full px-3 py-1 hover:text-slate-900 hover:bg-slate-100"
-              >
-                Dashboard
-              </Link>
-              <Link
-                to="/applications"
-                className="rounded-full px-3 py-1 hover:text-slate-900 hover:bg-slate-100"
-              >
-                Applications
-              </Link>
-            </nav>
+      <PageContainer>
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-200 bg-[linear-gradient(135deg,rgba(11,75,74,0.08),rgba(15,23,42,0.02))] px-6 py-7 sm:px-8">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#0B4B4A]">Settings</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-900">Manage your account</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-600 sm:text-base">
+              Keep profile details current and handle account changes from one clean settings page.
+            </p>
           </div>
 
-          <UserMenu displayName={displayName} onLogout={logout} />
-        </div>
-      </div>
+          <div className="grid gap-0 lg:grid-cols-[minmax(0,1.25fr)_minmax(280px,0.75fr)]">
+            <div className="px-6 py-6 sm:px-8">
+              <div className="max-w-xl">
+                <h2 className="text-lg font-semibold text-slate-900">Profile</h2>
+                <p className="mt-1 text-sm text-slate-600">
+                  Update the name used across your dashboard and application workspace.
+                </p>
 
-      <div className="mx-auto max-w-6xl px-6 py-8 space-y-8">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Settings</h1>
-          <p className="mt-1 text-sm text-slate-600">Manage your personal info and account.</p>
-        </div>
-        {/* Profile card */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">Profile</h2>
-          <p className="mt-1 text-sm text-slate-600">Update your display name used in greetings.</p>
+                <div className="mt-6 space-y-5">
+                  <div>
+                    <FieldLabel>Email</FieldLabel>
+                    <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                      {user?.email}
+                    </div>
+                  </div>
 
-          <div className="mt-5 space-y-4">
-            <div>
-              <label className="text-sm font-medium text-slate-700">Email</label>
-              <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                {user?.email}
+                  <div>
+                    <FieldLabel>Name</FieldLabel>
+                    <TextInput
+                      className="mt-2"
+                      placeholder="Your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                    />
+                  </div>
+
+                  {message && (
+                    <AlertMessage variant="success">
+                      {message}
+                    </AlertMessage>
+                  )}
+
+                  {error && (
+                    <AlertMessage>
+                      {error}
+                    </AlertMessage>
+                  )}
+
+                  <PrimaryButton
+                    type="button"
+                    onClick={onSaveProfile}
+                    disabled={saving}
+                    className="mt-1"
+                  >
+                    {saving ? "Saving..." : "Save changes"}
+                  </PrimaryButton>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="text-sm font-medium text-slate-700">Name</label>
-              <input
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none ring-[#0B4B4A]/25 placeholder:text-slate-400 focus:border-[#0B4B4A] focus:ring-4"
-                placeholder="Your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </div>
+            <aside className="border-t border-slate-200 bg-slate-50/80 px-6 py-6 sm:px-8 lg:border-l lg:border-t-0">
+              <h2 className="text-lg font-semibold text-slate-900">Account actions</h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Review higher-impact actions before you continue.
+              </p>
 
-            {message && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                {message}
+              <div className="mt-6 rounded-3xl border border-rose-200 bg-rose-50 p-5">
+                <h3 className="text-sm font-semibold uppercase tracking-wide text-rose-700">Danger zone</h3>
+                <p className="mt-2 text-sm leading-6 text-rose-700">
+                  Deleting your account removes all applications and cannot be undone.
+                </p>
+
+                <SecondaryButton
+                  type="button"
+                  onClick={onDeleteAccount}
+                  disabled={deleting}
+                  className="mt-5 border-rose-300 px-5 py-3 text-rose-700 hover:bg-rose-100"
+                >
+                  {deleting ? "Deleting..." : "Delete account"}
+                </SecondaryButton>
               </div>
-            )}
-
-            {error && (
-              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-                {error}
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={onSaveProfile}
-              disabled={saving}
-              className="mt-2 inline-flex items-center justify-center rounded-xl bg-[#0B4B4A] px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[#083D3C] disabled:cursor-not-allowed disabled:opacity-70"
-            >
-              {saving ? "Saving..." : "Save changes"}
-            </button>
+            </aside>
           </div>
-        </div>
-
-        {/* Danger zone */}
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-rose-600">Danger zone</h2>
-          <p className="mt-1 text-sm text-rose-700">
-            Deleting your account will remove all of your applications and cannot be undone.
-          </p>
-
-          <button
-            type="button"
-            onClick={onDeleteAccount}
-            disabled={deleting}
-            className="mt-4 inline-flex items-center justify-center rounded-xl border border-rose-300 bg-white px-5 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
-          >
-            {deleting ? "Deleting..." : "Delete account"}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function UserMenu({
-  displayName,
-  onLogout,
-}: {
-  displayName: string;
-  onLogout: () => Promise<void>;
-}) {
-  const [open, setOpen] = useState(false);
-
-  const initial = displayName.trim().charAt(0).toUpperCase() || "U";
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-      >
-        <span className="grid h-7 w-7 place-items-center rounded-full bg-[#0B4B4A] text-xs font-semibold text-white">
-          {initial}
-        </span>
-        <span className="hidden text-sm font-medium text-slate-800 sm:inline">{displayName}</span>
-        <span className="text-slate-400">▾</span>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 z-20 mt-2 w-44 overflow-hidden rounded-xl border border-slate-200 bg-white py-1 text-sm shadow-lg">
-          <Link
-            to="/settings"
-            className="block px-3 py-2 text-left text-slate-700 hover:bg-slate-50"
-            onClick={() => setOpen(false)}
-          >
-            Settings
-          </Link>
-          <button
-            type="button"
-            onClick={async () => {
-              setOpen(false);
-              await onLogout();
-            }}
-            className="block w-full px-3 py-2 text-left text-rose-600 hover:bg-rose-50"
-          >
-            Log out
-          </button>
-        </div>
-      )}
+        </section>
+      </PageContainer>
     </div>
   );
 }
