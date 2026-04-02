@@ -1,5 +1,5 @@
 import jwt, { SignOptions } from 'jsonwebtoken';
-import {env} from '../../config/env';
+import {env} from '../../config/env.js';
 import type {CookieOptions} from 'express';
 
 //payload type

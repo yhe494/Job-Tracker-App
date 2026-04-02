@@ -1,6 +1,6 @@
 import {Router} from 'express';
-import { requireAuth } from '../../middleware/requireAuth';
-import { createApplicationHandler, listApplicationsHandler, getApplicationByIdHandler, deleteApplicationByIdHandler, updateApplicationByIdHandler, getApplicationStatsHandler } from './applications.controller';
+import { requireAuth } from '../../middleware/requireAuth.js';
+import { createApplicationHandler, listApplicationsHandler, getApplicationByIdHandler, deleteApplicationByIdHandler, updateApplicationByIdHandler, getApplicationStatsHandler } from './applications.controller.js';
 
 const router = Router();
 router.use(requireAuth);

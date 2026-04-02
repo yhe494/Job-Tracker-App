@@ -1,6 +1,6 @@
-import app from "./app";
-import { env } from "./config/env";
-import { connectMongo, disconnectMongo} from "./db/mongo";
+import app from "./app.js";
+import { env } from "./config/env.js";
+import { connectMongo, disconnectMongo} from "./db/mongo.js";
 
 
 
