@@ -1,7 +1,7 @@
-import {changePassword, deleteAccount, login, refresh, register, updateMe} from "./auth.service";
-import {asyncHandler} from "../../utils/asyncHandler";
-import { registerSchema , loginSchema, updateMeSchema, changePasswordSchema} from "./auth.schemas";
-import {getRefreshCookieOptions} from "./auth.tokens";
+import {changePassword, deleteAccount, login, refresh, register, updateMe} from "./auth.service.js";
+import {asyncHandler} from "../../utils/asyncHandler.js";
+import { registerSchema , loginSchema, updateMeSchema, changePasswordSchema} from "./auth.schemas.js";
+import {getRefreshCookieOptions} from "./auth.tokens.js";
 import type {Request, Response} from 'express';
 
 
