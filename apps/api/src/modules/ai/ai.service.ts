@@ -1,8 +1,8 @@
 
 import OpenAI from "openai";
-import {env} from "../../config/env.js";
-import {ResumeMatchResult} from "./ai.types.js";
-import{resumeMatchResponseSchema} from "./ai.schema.js";
+import {env} from "../../config/env";
+import {ResumeMatchResult} from "./ai.types";
+import{resumeMatchResponseSchema} from "./ai.schema";
 
 const client = new OpenAI({
     apiKey: env.OPENAI_API_KEY,

@@ -1,10 +1,8 @@
 import { Router} from "express";
-import { postResumeMatch } from "./ai.controller.js";
-import { requireAuth } from "../../middleware/requireAuth.js";
-import{aiLimiter} from "../../middleware/rateLimit.js";
+import { postResumeMatch } from "./ai.controller";
 
 const router = Router();
 
-router.post("/resume-match", aiLimiter, requireAuth, postResumeMatch);
+router.post("/resume-match", postResumeMatch);
 
 export default router;

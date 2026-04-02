@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { extractTextFromPdfBuffer } from "./resume.service.js";
-import { generateResumeJobMatch } from "../ai/ai.service.js";
+import { extractTextFromPdfBuffer } from "./resume.service";
+import { generateResumeJobMatch } from "../ai/ai.service";
 
 export async function uploadResume(
   req: Request,

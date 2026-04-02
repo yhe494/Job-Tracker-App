@@ -1,6 +1,6 @@
 import {Request, Response, NextFunction} from 'express';
-import { generateResumeJobMatch } from './ai.service.js';
-import { resumeMatchRequestSchema } from './ai.schema.js';
+import { generateResumeJobMatch } from './ai.service';
+import { resumeMatchRequestSchema } from './ai.schema';
 
 
 
