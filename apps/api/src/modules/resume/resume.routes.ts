@@ -1,6 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
-import { uploadResume, matchUploadedResume } from "./resume.controller";
+import { uploadResume, matchUploadedResume } from "./resume.controller.js";
 
 const router = Router();
 

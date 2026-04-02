@@ -1,9 +1,9 @@
 import bcrypt from "bcrypt";
-import User from "./auth.model";
-import {ChangePasswordInput, LoginInput, RegisterInput, UpdateMeInput} from "./auth.schemas";
-import {signAccessToken, signRefreshToken, verifyRefreshToken, type AccessTokenPayload} from "./auth.tokens";
+import User from "./auth.model.js";
+import {ChangePasswordInput, LoginInput, RegisterInput, UpdateMeInput} from "./auth.schemas.js";
+import {signAccessToken, signRefreshToken, verifyRefreshToken, type AccessTokenPayload} from "./auth.tokens.js";
 import { Types } from "mongoose";
-import Application from "../applications/applications.model";
+import Application from "../applications/applications.model.js";
 
 
 //Salt rounds for bcrypt

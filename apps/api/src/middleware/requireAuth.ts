@@ -1,5 +1,5 @@
 import type {Request, Response, NextFunction} from 'express';
-import {verifyAccessToken} from "../modules/auth/auth.tokens";
+import {verifyAccessToken} from "../modules/auth/auth.tokens.js";
 
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
     const header = req.headers.authorization;

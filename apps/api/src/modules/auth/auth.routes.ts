@@ -1,6 +1,6 @@
 import {Router} from "express";
-import { requireAuth } from "../../middleware/requireAuth";
-import {registerHandler, loginHandler, refreshHandler, logoutHandler, meHandler, changePasswordHandler, deleteAccountHandler, updateMeHandler} from "./auth.controller";
+import { requireAuth } from "../../middleware/requireAuth.js";
+import {registerHandler, loginHandler, refreshHandler, logoutHandler, meHandler, changePasswordHandler, deleteAccountHandler, updateMeHandler} from "./auth.controller.js";
 const router = Router();
 
 router.post("/register", registerHandler);

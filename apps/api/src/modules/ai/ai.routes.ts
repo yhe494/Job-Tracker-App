@@ -1,5 +1,5 @@
 import { Router} from "express";
-import { postResumeMatch } from "./ai.controller";
+import { postResumeMatch } from "./ai.controller.js";
 
 const router = Router();
 
