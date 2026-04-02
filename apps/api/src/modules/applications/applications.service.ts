@@ -1,7 +1,7 @@
 import { Types } from "mongoose";
-import Application from "./applications.model.js";
+import Application from "./applications.model";
 import type { z } from "zod";
-import { createApplicationSchema, listApplicationsQuerySchema, updateApplicationSchema } from "./applications.schemas.js";
+import { createApplicationSchema, listApplicationsQuerySchema, updateApplicationSchema } from "./applications.schemas";
 
 type CreateInput = z.infer<typeof createApplicationSchema>;
 type ListApplicationsQuery = z.infer<typeof listApplicationsQuerySchema>;

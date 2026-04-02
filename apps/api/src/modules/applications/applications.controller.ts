@@ -1,7 +1,7 @@
-import { createApplication, listApplications , getApplicationById, updateApplication, deleteApplicationById, getApplicationStats} from "./applications.service.js";
-import { asyncHandler } from "../../utils/asyncHandler.js";
+import { createApplication, listApplications , getApplicationById, updateApplication, deleteApplicationById, getApplicationStats} from "./applications.service";
+import { asyncHandler } from "../../utils/asyncHandler";
 import type {Request, Response} from 'express';
-import { createApplicationSchema, listApplicationsQuerySchema } from "./applications.schemas.js";
+import { createApplicationSchema, listApplicationsQuerySchema } from "./applications.schemas";
 
 /**
  * Handles the creation of a new job application.
