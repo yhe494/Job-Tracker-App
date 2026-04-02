@@ -1,6 +1,7 @@
 import { Router } from "express";
 import multer from "multer";
 import { uploadResume, matchUploadedResume } from "./resume.controller.js";
+import { requireAuth } from "../../middleware/requireAuth.js";
 
 const router = Router();
 
@@ -21,7 +22,7 @@ const upload = multer({
     cb(null, true);
   },
 });
-
+router.use(requireAuth);
 router.post("/extract-text", upload.single("resume"), uploadResume);
 router.post("/match", upload.single("resume"), matchUploadedResume);
 
