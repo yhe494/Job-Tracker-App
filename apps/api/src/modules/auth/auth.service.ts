@@ -5,6 +5,20 @@ import {signAccessToken, signRefreshToken, verifyRefreshToken, type AccessTokenP
 import { Types } from "mongoose";
 import Application from "../applications/applications.model.js";
 
+type HttpError = Error & {
+  status: number;
+  code: string;
+  details?: unknown;
+};
+
+function createHttpError(status: number, code: string, message: string, details?: unknown): HttpError {
+  const error = new Error(message) as HttpError;
+  error.status = status;
+  error.code = code;
+  error.details = details;
+  return error;
+}
+
 
 //Salt rounds for bcrypt
 const SALT_ROUNDS = 12;
@@ -38,7 +52,7 @@ export async function register(input: RegisterInput) {
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    throw new Error("User with this email already exists");
+    throw createHttpError(409, "USER_ALREADY_EXISTS", "User with this email already exists");
   }
 
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
@@ -60,7 +74,7 @@ export async function register(input: RegisterInput) {
   } catch (err: any) {
     // handle duplicate key (E11000)
     if (err?.code === 11000) {
-      throw new Error("User with this email already exists");
+      throw createHttpError(409, "USER_ALREADY_EXISTS", "User with this email already exists");
     }
     throw err;
   }
@@ -85,12 +99,12 @@ export async function login(input : LoginInput){
 
     const user = await User.findOne({email}).select('+passwordHash');
     if(!user){
-        throw new Error("Invalid email or password");
+    throw createHttpError(401, "INVALID_CREDENTIALS", "Invalid email or password");
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
     if(!isPasswordValid){
-        throw new Error("Invalid email or password");
+    throw createHttpError(401, "INVALID_CREDENTIALS", "Invalid email or password");
     }
 
     const payload: AccessTokenPayload = {
@@ -122,7 +136,7 @@ export async function refresh(refreshToken: string) {
 
   const user = await User.findById(payload.userId);
   if (!user) {
-    throw new Error("Invalid refresh token");
+    throw createHttpError(401, "INVALID_REFRESH_TOKEN", "Invalid refresh token");
   }
 
   const newPayload: AccessTokenPayload = {
@@ -144,7 +158,7 @@ export async function refresh(refreshToken: string) {
  */
 export async function updateMe(userId: string, patch: UpdateMeInput){
   if(!Types.ObjectId.isValid(userId)){
-    throw new Error("Invalid user ID");
+    throw createHttpError(400, "INVALID_USER_ID", "Invalid user ID");
   }
 
   const updated = await User.findByIdAndUpdate(
@@ -176,7 +190,7 @@ export async function updateMe(userId: string, patch: UpdateMeInput){
  */
 export async function changePassword(userId: string, input: ChangePasswordInput){
   if(!Types.ObjectId.isValid(userId)){
-    throw new Error("Invalid user ID");
+    throw createHttpError(400, "INVALID_USER_ID", "Invalid user ID");
   }
 
   const {currentPassword, newPassword} = input;
@@ -186,7 +200,7 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
 
   const ok = await bcrypt.compare(currentPassword, user.passwordHash);
   if(!ok){
-    throw new Error("Current password is incorrect");
+    throw createHttpError(401, "INVALID_CURRENT_PASSWORD", "Current password is incorrect");
   }
 
   const newHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -204,7 +218,7 @@ export async function changePassword(userId: string, input: ChangePasswordInput)
  */
 export async function deleteAccount(userId: string){
   if(!Types.ObjectId.isValid(userId)){
-    throw new Error("Invalid user ID");
+    throw createHttpError(400, "INVALID_USER_ID", "Invalid user ID");
   }
 
   await Application.deleteMany({userId: new Types.ObjectId(userId)});
