@@ -58,6 +58,45 @@ flowchart LR
 
 For local access, services are reached through `kubectl port-forward`.
 
+### Kubernetes Resource Hierarchy (Pods to Cluster)
+
+```mermaid
+flowchart TB
+  C[Kubernetes Cluster]
+  C --> N[Namespace: default]
+
+  N --> AD[Deployment: api \n replicas: 3]
+  N --> WD[Deployment: web \n replicas: 1]
+  N --> MD[Deployment: mongodb \n replicas: 1]
+
+  AD --> AP1[api-pod-1]
+  AD --> AP2[api-pod-2]
+  AD --> AP3[api-pod-3]
+  WD --> WP1[web-pod-1]
+  MD --> MP1[mongodb-pod-1]
+
+  N --> ASVC[Service: api \n ClusterIP:4000]
+  N --> WSVC[Service: web \n ClusterIP:80]
+  N --> MSVC[Service: mongodb \n ClusterIP:27017]
+
+  N --> CM[ConfigMap: api-config]
+  N --> SEC[Secret: api-secret]
+  N --> PVC[PVC: mongodb-pvc]
+
+  ASVC -. routes to .-> AD
+  WSVC -. routes to .-> WD
+  MSVC -. routes to .-> MD
+
+  AP1 -. envFrom .-> CM
+  AP1 -. envFrom .-> SEC
+  AP2 -. envFrom .-> CM
+  AP2 -. envFrom .-> SEC
+  AP3 -. envFrom .-> CM
+  AP3 -. envFrom .-> SEC
+
+  MP1 -. volume mount .-> PVC
+```
+
 ## 4. Repository Layout
 
 ```text
