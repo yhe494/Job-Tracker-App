@@ -31,26 +31,32 @@ At a high level, the platform supports:
 
 ## 3. Architecture Summary
 
-The system uses a classic client-server architecture.
+The system uses a client-server architecture and is deployed in Kubernetes for local development/testing.
 
-```text
-React SPA (apps/web)
-        |
-        | HTTPS / JSON
-        v
-Express REST API (apps/api)
-        |
-        | Mongoose
-        v
-MongoDB
+### Deployment Architecture (Kubernetes)
+
+```mermaid
+flowchart LR
+  U[Browser User] --> W[Web Pod\nNginx serving Vite build]
+  W -->|/api requests + cookies| A[API Pod\nExpress REST API]
+  A -->|Mongoose| DB[(MongoDB Pod + PVC)]
+  A --> OAI[OpenAI Responses API]
+
+  subgraph K8s Cluster
+    W
+    A
+    DB
+    WSVC[web Service ClusterIP]
+    ASVC[api Service ClusterIP]
+    MSVC[mongodb Service ClusterIP]
+  end
+
+  W --- WSVC
+  A --- ASVC
+  DB --- MSVC
 ```
 
-For AI-assisted resume matching:
-
-```text
-Frontend -> API -> OpenAI Responses API
-Frontend -> API -> PDF text extraction -> OpenAI Responses API
-```
+For local access, services are reached through `kubectl port-forward`.
 
 ## 4. Repository Layout
 
@@ -212,6 +218,14 @@ Startup sequence:
 5. The server begins listening on `env.PORT`.
 
 This fail-fast startup model is helpful because the application does not accept requests unless required dependencies are configured correctly.
+
+## 7.1 Kubernetes Runtime Flow
+
+1. MongoDB deployment starts and mounts persistent storage through PVC.
+2. API deployment starts with environment from ConfigMap + Secret.
+3. API readiness and liveness probes check `/api/v1/health`.
+4. Web deployment serves static frontend build via Nginx.
+5. Developer accesses web and API via local port-forward (for example `8080 -> web:80`, `4000 -> api:4000`).
 
 ## 8. Environment Configuration
 
@@ -525,6 +539,8 @@ The frontend always sends credentials with requests so the refresh-token cookie 
 
 This is essential because the frontend and backend run on different local origins during development.
 
+In Kubernetes local mode, this also applies when frontend is opened on `http://localhost:8080` and API is forwarded on `http://localhost:4000`.
+
 ## 16. Scalability Considerations
 
 The current architecture is appropriate for an early-stage product or portfolio application and can scale moderately with good infrastructure.
@@ -536,6 +552,7 @@ The current architecture is appropriate for an early-stage product or portfolio 
 - MongoDB indexes for primary application queries
 - centralized API client
 - isolated AI and resume modules
+- route-level rate limiting for auth and compute-heavy endpoints
 
 ### Likely Bottlenecks at Higher Scale
 
@@ -543,16 +560,16 @@ The current architecture is appropriate for an early-stage product or portfolio 
 - in-memory file upload handling is not ideal for large or frequent uploads
 - no background queue for resume processing
 - no caching layer for expensive repeated operations
-- no rate limiting currently visible in the codebase
+- single-region/local-cluster operational assumptions
 
 ### Natural Next Improvements
 
-- add request rate limiting
 - add structured logging
 - add automated tests
 - add background jobs for PDF parsing and AI analysis
 - add object storage for uploaded resumes if persistent uploads are needed
 - add retry and token refresh interception on the frontend API client
+- add ingress/TLS when moving beyond local-network usage
 
 ## 17. Reliability and Operational Notes
 
@@ -568,9 +585,8 @@ The current architecture is appropriate for an early-stage product or portfolio 
 
 - automated unit/integration tests
 - CI pipeline
-- deployment documentation
 - monitoring and alerting
-- rate limiting and abuse protection
+- cluster ingress and public-domain routing
 
 ## 18. Tradeoffs
 

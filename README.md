@@ -141,6 +141,86 @@ Default local URLs:
 - Frontend: `http://localhost:5173`
 - API: `http://localhost:4000`
 
+## Kubernetes (Local Cluster)
+
+The repository includes Kubernetes manifests under `k8s/` for:
+
+- `api` deployment and service
+- `web` deployment and service
+- `mongodb` deployment, service, and PVC
+
+### Build Images
+
+Build API image:
+
+```bash
+docker build -t jobtracker-api:latest apps/api
+```
+
+Build Web image:
+
+```bash
+docker build -t jobtracker-web:latest apps/web
+```
+
+If you use Minikube, load images into the cluster runtime:
+
+```bash
+minikube image load jobtracker-api:latest
+minikube image load jobtracker-web:latest
+```
+
+### Create API Secret
+
+`k8s/api-deployment.yaml` expects a secret named `api-secret`.
+
+```bash
+kubectl create secret generic api-secret \
+  --from-literal=JWT_ACCESS_SECRET=replace_with_access_secret \
+  --from-literal=JWT_REFRESH_SECRET=replace_with_refresh_secret \
+  --from-literal=OPENAI_API_KEY=replace_with_openai_key \
+  --from-literal=MONGODB_DB_NAME=jobtracker
+```
+
+### Deploy
+
+```bash
+kubectl apply -f k8s/mongodb-pvc.yaml
+kubectl apply -f k8s/mongodb-deployment.yaml
+kubectl apply -f k8s/mongodb-service.yaml
+kubectl apply -f k8s/api-configmap.yaml
+kubectl apply -f k8s/api-deployment.yaml
+kubectl apply -f k8s/api-service.yaml
+kubectl apply -f k8s/web-deployment.yaml
+kubectl apply -f k8s/web-service.yaml
+```
+
+### Access from Your Machine
+
+Port-forward web and API services:
+
+```bash
+kubectl port-forward service/web 8080:80
+kubectl port-forward service/api 4000:4000
+```
+
+Open:
+
+- Frontend: `http://localhost:8080`
+- API: `http://localhost:4000`
+
+For this mode, ensure backend `CLIENT_ORIGIN` includes `http://localhost:8080`.
+
+## Architecture Diagram
+
+```mermaid
+flowchart LR
+  U[Browser User] --> W[Web SPA\nReact + Vite build\nK8s web deployment]
+  W -->|HTTPS/JSON + credentials| A[API\nExpress + TypeScript\nK8s api deployment]
+  A --> M[(MongoDB\nK8s mongodb deployment + PVC)]
+  A --> O[OpenAI Responses API]
+```
+
 ## Available Scripts
 
 ### Root
@@ -225,7 +305,6 @@ This project already includes:
 Areas that can still be improved:
 
 - Automated testing
-- Deployment documentation
 - CI setup
 - API request examples
 
