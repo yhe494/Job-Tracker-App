@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: api-config
 data:
-  NODE_ENV: "development"
+  NODE_ENV: "production"
   PORT: "4000"
-  CLIENT_ORIGIN: "http://localhost:5173,http://127.0.0.1:5173,http://localhost:8080,http://127.0.0.1:8080"
+  CLIENT_ORIGIN: "http://10.0.0.96:30080"
   MONGODB_URI: "mongodb://mongodb:27017/jobtracker"
