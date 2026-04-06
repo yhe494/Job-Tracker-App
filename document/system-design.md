@@ -31,70 +31,25 @@ At a high level, the platform supports:
 
 ## 3. Architecture Summary
 
-The system uses a client-server architecture and is deployed in Kubernetes for local development/testing.
+The system uses a classic client-server architecture.
 
-### Deployment Architecture (Kubernetes)
-
-```mermaid
-flowchart LR
-  U[Browser User] --> W[Web Pod\nNginx serving Vite build]
-  W -->|/api requests + cookies| A[API Pod\nExpress REST API]
-  A -->|Mongoose| DB[(MongoDB Pod + PVC)]
-  A --> OAI[OpenAI Responses API]
-
-  subgraph K8s Cluster
-    W
-    A
-    DB
-    WSVC[web Service ClusterIP]
-    ASVC[api Service ClusterIP]
-    MSVC[mongodb Service ClusterIP]
-  end
-
-  W --- WSVC
-  A --- ASVC
-  DB --- MSVC
+```text
+React SPA (apps/web)
+        |
+        | HTTPS / JSON
+        v
+Express REST API (apps/api)
+        |
+        | Mongoose
+        v
+MongoDB
 ```
 
-For local access, services are reached through `kubectl port-forward`.
+For AI-assisted resume matching:
 
-### Kubernetes Resource Hierarchy (Pods to Cluster)
-
-```mermaid
-flowchart TB
-  C[Kubernetes Cluster]
-  C --> N[Namespace: default]
-
-  N --> AD[Deployment: api \n replicas: 3]
-  N --> WD[Deployment: web \n replicas: 1]
-  N --> MD[Deployment: mongodb \n replicas: 1]
-
-  AD --> AP1[api-pod-1]
-  AD --> AP2[api-pod-2]
-  AD --> AP3[api-pod-3]
-  WD --> WP1[web-pod-1]
-  MD --> MP1[mongodb-pod-1]
-
-  N --> ASVC[Service: api \n ClusterIP:4000]
-  N --> WSVC[Service: web \n ClusterIP:80]
-  N --> MSVC[Service: mongodb \n ClusterIP:27017]
-
-  N --> CM[ConfigMap: api-config]
-  N --> SEC[Secret: api-secret]
-  N --> PVC[PVC: mongodb-pvc]
-
-  ASVC -. routes to .-> AD
-  WSVC -. routes to .-> WD
-  MSVC -. routes to .-> MD
-
-  AP1 -. envFrom .-> CM
-  AP1 -. envFrom .-> SEC
-  AP2 -. envFrom .-> CM
-  AP2 -. envFrom .-> SEC
-  AP3 -. envFrom .-> CM
-  AP3 -. envFrom .-> SEC
-
-  MP1 -. volume mount .-> PVC
+```text
+Frontend -> API -> OpenAI Responses API
+Frontend -> API -> PDF text extraction -> OpenAI Responses API
 ```
 
 ## 4. Repository Layout
@@ -257,14 +212,6 @@ Startup sequence:
 5. The server begins listening on `env.PORT`.
 
 This fail-fast startup model is helpful because the application does not accept requests unless required dependencies are configured correctly.
-
-## 7.1 Kubernetes Runtime Flow
-
-1. MongoDB deployment starts and mounts persistent storage through PVC.
-2. API deployment starts with environment from ConfigMap + Secret.
-3. API readiness and liveness probes check `/api/v1/health`.
-4. Web deployment serves static frontend build via Nginx.
-5. Developer accesses web and API via local port-forward (for example `8080 -> web:80`, `4000 -> api:4000`).
 
 ## 8. Environment Configuration
 
@@ -578,8 +525,6 @@ The frontend always sends credentials with requests so the refresh-token cookie 
 
 This is essential because the frontend and backend run on different local origins during development.
 
-In Kubernetes local mode, this also applies when frontend is opened on `http://localhost:8080` and API is forwarded on `http://localhost:4000`.
-
 ## 16. Scalability Considerations
 
 The current architecture is appropriate for an early-stage product or portfolio application and can scale moderately with good infrastructure.
@@ -591,7 +536,6 @@ The current architecture is appropriate for an early-stage product or portfolio 
 - MongoDB indexes for primary application queries
 - centralized API client
 - isolated AI and resume modules
-- route-level rate limiting for auth and compute-heavy endpoints
 
 ### Likely Bottlenecks at Higher Scale
 
@@ -599,16 +543,16 @@ The current architecture is appropriate for an early-stage product or portfolio 
 - in-memory file upload handling is not ideal for large or frequent uploads
 - no background queue for resume processing
 - no caching layer for expensive repeated operations
-- single-region/local-cluster operational assumptions
+- no rate limiting currently visible in the codebase
 
 ### Natural Next Improvements
 
+- add request rate limiting
 - add structured logging
 - add automated tests
 - add background jobs for PDF parsing and AI analysis
 - add object storage for uploaded resumes if persistent uploads are needed
 - add retry and token refresh interception on the frontend API client
-- add ingress/TLS when moving beyond local-network usage
 
 ## 17. Reliability and Operational Notes
 
@@ -624,8 +568,9 @@ The current architecture is appropriate for an early-stage product or portfolio 
 
 - automated unit/integration tests
 - CI pipeline
+- deployment documentation
 - monitoring and alerting
-- cluster ingress and public-domain routing
+- rate limiting and abuse protection
 
 ## 18. Tradeoffs
 
