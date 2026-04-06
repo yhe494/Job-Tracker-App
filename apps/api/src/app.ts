@@ -1,13 +1,13 @@
 import express from "express";
 import cors from "cors";
-import {env} from './config/env';
-import {errorHandler} from './middleware/errorHandler';
-import { getDbStatus } from "./db/mongo";
+import {env} from './config/env.js';
+import {errorHandler} from './middleware/errorHandler.js';
+import { getDbStatus } from "./db/mongo.js";
 import cookieParser from "cookie-parser";
-import authRoutes from "./modules/auth/auth.routes";
-import applicationsRoutes from "./modules/applications/applications.routes";
-import aiRoutes from "./modules/ai/ai.routes";
-import resumeRoutes from "./modules/resume/resume.routes";
+import authRoutes from "./modules/auth/auth.routes.js";
+import applicationsRoutes from "./modules/applications/applications.routes.js";
+import aiRoutes from "./modules/ai/ai.routes.js";
+import resumeRoutes from "./modules/resume/resume.routes.js";
 
 const app = express();
 
