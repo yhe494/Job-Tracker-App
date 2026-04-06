@@ -141,6 +141,32 @@ Default local URLs:
 - Frontend: `http://localhost:5173`
 - API: `http://localhost:4000`
 
+## CI/CD
+
+Deployment is automated with GitHub Actions using the workflow at `.github/workflows/deploy-main.yml`.
+
+### Deploy Pipeline (Main Branch)
+
+- Triggered automatically on pushes to `main`
+- Can also be run manually via `workflow_dispatch`
+- Uses a self-hosted runner with labels: `linux`, `x64`, `k3s-server`
+
+Pipeline steps:
+
+1. Check out repository source
+2. Build Docker image for API (`jobtracker-api:latest`)
+3. Import API image into k3s container runtime
+4. Build Docker image for Web (`jobtracker-web:latest`)
+5. Import Web image into k3s container runtime
+6. Apply Kubernetes manifests from `k8s/`
+7. Restart `api` and `web` deployments and wait for rollout completion
+8. Print pod status for verification
+
+### Notes
+
+- Workflow concurrency is enabled (`deploy-main`) so only one deploy runs at a time
+- Deployment currently targets a local/self-managed k3s server environment
+
 ## Kubernetes (Local Cluster)
 
 The repository includes Kubernetes manifests under `k8s/` for:
@@ -305,7 +331,7 @@ This project already includes:
 Areas that can still be improved:
 
 - Automated testing
-- CI setup (In Progress)
+- CI test workflow for pull requests (lint/test/build gates)
 - API request examples
 
 ## License
