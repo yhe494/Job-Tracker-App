@@ -305,7 +305,7 @@ This project already includes:
 Areas that can still be improved:
 
 - Automated testing
-- CI setup
+- CI setup (In Progress)
 - API request examples
 
 ## License
