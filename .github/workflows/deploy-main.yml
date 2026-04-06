@@ -1,0 +1,51 @@
+name: Deploy main to local k3s server
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, x64, k3s-server]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set kubeconfig
+        run: echo "KUBECONFIG=$HOME/.kube/config" >> $GITHUB_ENV
+
+      - name: Build backend image
+        run: docker build -t jobtracker-api:latest ./apps/api
+
+      - name: Import backend image into k3s
+        run: |
+          docker save jobtracker-api:latest -o jobtracker-api.tar
+          sudo k3s ctr images import jobtracker-api.tar
+
+      - name: Build frontend image
+        run: docker build -t jobtracker-web:latest ./apps/web
+
+      - name: Import frontend image into k3s
+        run: |
+          docker save jobtracker-web:latest -o jobtracker-web.tar
+          sudo k3s ctr images import jobtracker-web.tar
+
+      - name: Apply manifests
+        run: kubectl apply -f k8s/
+
+      - name: Restart deployments
+        run: |
+          kubectl rollout restart deployment/api
+          kubectl rollout restart deployment/web
+          kubectl rollout status deployment/api
+          kubectl rollout status deployment/web
+
+      - name: Check pods
+        run: kubectl get pods
